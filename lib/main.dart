@@ -1,3 +1,4 @@
+import 'package:blackbeards_board/backend_connector.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -31,8 +32,26 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+
+  BackendConnector backendConnector;
+
+  void onBoardChanged(Blackboard blackboard){
+    setState(() {
+
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    backendConnector = BackendConnector();
+    backendConnector.registerOnBoardChange("name", onBoardChanged);
+  }
+
   @override
   Widget build(BuildContext context) {
+
+
     return Scaffold(
         appBar: AppBar(
           title: Text("Titel"),
@@ -55,10 +74,24 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           Expanded(
             flex: 2,
-            child: Container(
-              color: Colors.red,
-              height: 100,
-            ),
+            child: FutureBuilder<Blackboard>(
+              future: backendConnector.getBoard("Test"),
+              builder: (BuildContext context, AsyncSnapshot<Blackboard> snapshot) {
+                if(snapshot.hasError){
+                  return Text("Someting unexpected happend");
+                }
+                if(snapshot.hasData){
+                  return Text(snapshot.data.name);
+                }else{
+                  return SizedBox(
+                    width: 50,
+                    height: 50,
+                    child: CircularProgressIndicator(),
+                  );
+                }
+              },
+
+            )
           )
         ]));
   }
