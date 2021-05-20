@@ -43,12 +43,6 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  bool listItemTapped(){
-    setState(() {
-
-    });
-  }
-
   @override
   void initState() {
     super.initState();
@@ -67,7 +61,6 @@ class _MyHomePageState extends State<MyHomePage> {
           Expanded(
             flex: 1,
             child: ListView.builder(
-
               padding: EdgeInsets.all(4),
               itemBuilder: (BuildContext context, int index){
                 return Container(
@@ -115,6 +108,16 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             )
           )
-        ]));
+        ]),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () {
+            // Add your onPressed code here!
+          },
+          label: const Text('New Blackboard'),
+          icon: const Icon(Icons.add),
+          backgroundColor: Colors.blue,
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.startFloat
+    );
   }
 }
