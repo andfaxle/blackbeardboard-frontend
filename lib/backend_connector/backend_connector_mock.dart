@@ -90,7 +90,9 @@ class BackendConnectorMock implements BackendConnector{
 
   @override
   Future deleteAllBlackboards() async{
+
     await Future.delayed(Duration(milliseconds: 2000));
+
     for(Blackboard blackboard in data){
       onBoardRemovedCallback(blackboard.name);
     }

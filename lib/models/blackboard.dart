@@ -13,4 +13,24 @@ class Blackboard{
 
   // The content of a blackboard
   Message message;
+
+  static const _KEY_NAME = "name";
+  static const _KEY_DEPRECATION_TIME = "deprecationTime";
+  static const _KEY_MESSAGE = "message";
+
+  static Blackboard fromJson(Map<String,dynamic> json){
+    String name = json[_KEY_NAME];
+    int deprecationTime = json[_KEY_DEPRECATION_TIME];
+    Message message = Message.fromJson(json[_KEY_MESSAGE]);
+
+    return Blackboard(name,deprecationTime,message);
+  }
+
+  Map<String,dynamic> toJson(){
+    return {
+      _KEY_NAME: name,
+      _KEY_DEPRECATION_TIME: deprecationTime,
+      _KEY_MESSAGE: message.toJson(),
+    };
+  }
 }

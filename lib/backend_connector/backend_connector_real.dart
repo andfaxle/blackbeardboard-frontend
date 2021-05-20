@@ -1,12 +1,28 @@
 import 'package:blackbeards_board/models/blackboard.dart';
-import 'package:blackbeards_board/models/message.dart';
 import 'abstract_backend_connector.dart';
+import 'package:http/http.dart' as http;
+
+
 
 class BackendConnectorReal implements BackendConnector{
+
+  String url = "127.0.0.1";
+  int port = 8080;
+
+  static const _KEY_ENDPOINT_BOARD = "board";
+  static const _KEY_ENDPOINT_BOARDS = "boards";
+
+  static const _KEY_ENDPOINT_BOARD_CHANGED = "board_changed";
+  static const _KEY_ENDPOINT_BOARD_ADDED = "board_added";
+  static const _KEY_ENDPOINT_BOARD_DELETED = "board_deleted";
+
+  Uri getUrl(){
+
+  }
+
   @override
   Future createBlackboard(Blackboard blackboard) {
-    // TODO: implement createBlackboard
-    throw UnimplementedError();
+
   }
 
   @override
