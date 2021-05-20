@@ -62,10 +62,16 @@ class _MyHomePageState extends State<MyHomePage> {
             child: ListView.builder(
               padding: EdgeInsets.all(4),
               itemBuilder: (BuildContext context, int index){
-                return Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Text("Das ist Tile $index"),
+                return Container(
+                  height: MediaQuery.of(context).size.width/8,
+                  child: Card(
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Center(
+                        child: Text("Das ist Tile $index", style: TextStyle(color: Colors.white),textAlign: TextAlign.center),
+                      ),
+                    ),
+                    color: Colors.black,
                   ),
                 );
               },
@@ -73,24 +79,28 @@ class _MyHomePageState extends State<MyHomePage> {
             )
           ),
           Expanded(
-            flex: 2,
-            child: FutureBuilder<Blackboard>(
-              future: backendConnector.getBoard("Test"),
-              builder: (BuildContext context, AsyncSnapshot<Blackboard> snapshot) {
-                if(snapshot.hasError){
-                  return Text("Someting unexpected happend");
-                }
-                if(snapshot.hasData){
-                  return Text(snapshot.data.name);
-                }else{
-                  return SizedBox(
-                    width: 50,
-                    height: 50,
-                    child: CircularProgressIndicator(),
-                  );
-                }
-              },
-
+            flex: 3,
+            child: Container (
+              color: Colors.black,
+              height: MediaQuery.of(context).size.width*0.375,
+              //padding: EdgeInsets.only(right: 600),
+              child: FutureBuilder<Blackboard>(
+                future: backendConnector.getBoard("Test"),
+                builder: (BuildContext context, AsyncSnapshot<Blackboard> snapshot) {
+                  if(snapshot.hasError){
+                    return Text("Someting unexpected happend");
+                  }
+                  if(snapshot.hasData){
+                    return Center(child: Text(snapshot.data.name, style: TextStyle(color: Colors.white),textAlign: TextAlign.center));
+                  }else{
+                    return SizedBox(
+                      width: 75,
+                      height: 75,
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                },
+              ),
             )
           )
         ]));
