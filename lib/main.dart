@@ -1,4 +1,5 @@
-import 'package:blackbeards_board/backend_connector.dart';
+import 'package:blackbeards_board/backend_connector/abstract_backend_connector.dart';
+import 'package:blackbeards_board/models/blackboard.dart';
 import 'package:blackbeards_board/tapable.dart';
 import 'package:flutter/material.dart';
 
@@ -51,7 +52,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    backendConnector = BackendConnector();
+    backendConnector = BackendConnector(BackendType.MOCK);
     backendConnector.registerOnBoardChange("name", onBoardChanged);
   }
 
