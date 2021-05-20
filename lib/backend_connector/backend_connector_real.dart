@@ -3,7 +3,6 @@ import 'package:blackbeards_board/models/message.dart';
 import 'abstract_backend_connector.dart';
 
 class BackendConnectorReal implements BackendConnector{
-
   @override
   Future createBlackboard(Blackboard blackboard) {
     // TODO: implement createBlackboard
@@ -35,7 +34,7 @@ class BackendConnectorReal implements BackendConnector{
   }
 
   @override
-  void registerOnBoardAdded(String name, Function(String name) callback) {
+  void registerOnBoardAdded(Function(String name) callback) {
     // TODO: implement registerOnBoardAdded
   }
 
@@ -45,8 +44,15 @@ class BackendConnectorReal implements BackendConnector{
   }
 
   @override
-  void registerOnBoardRemoved(String name, Function(String name) callback) {
+  void registerOnBoardRemoved(Function(String name) callback) {
     // TODO: implement registerOnBoardRemoved
   }
+
+  @override
+  Future updateBlackboard(Blackboard blackboard) {
+    // TODO: implement updateBlackboard
+    throw UnimplementedError();
+  }
+
 
 }

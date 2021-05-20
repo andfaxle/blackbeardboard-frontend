@@ -25,15 +25,17 @@ abstract class BackendConnector{
 
   Future<List<String>> getAllBlackboardNames();
 
+  Future updateBlackboard(Blackboard blackboard);
+
   Future deleteBlackboard(String name);
 
   Future deleteAllBlackboards();
 
   void registerOnBoardChange(String name,Function(Blackboard blackboard) callback);
 
-  void registerOnBoardAdded(String name,Function(String name) callback);
+  void registerOnBoardAdded(Function(String name) callback);
 
-  void registerOnBoardRemoved(String name,Function(String name) callback);
+  void registerOnBoardRemoved(Function(String name) callback);
 
 }
 
