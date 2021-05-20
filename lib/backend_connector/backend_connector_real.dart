@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:blackbeards_board/models/blackboard.dart';
 import 'abstract_backend_connector.dart';
 import 'package:http/http.dart' as http;
@@ -7,7 +9,6 @@ import 'package:http/http.dart' as http;
 class BackendConnectorReal implements BackendConnector{
 
   String url = "127.0.0.1";
-  int port = 8080;
 
   static const _KEY_ENDPOINT_BOARD = "board";
   static const _KEY_ENDPOINT_BOARDS = "boards";
@@ -16,13 +17,20 @@ class BackendConnectorReal implements BackendConnector{
   static const _KEY_ENDPOINT_BOARD_ADDED = "board_added";
   static const _KEY_ENDPOINT_BOARD_DELETED = "board_deleted";
 
-  Uri getUrl(){
 
-  }
 
   @override
   Future createBlackboard(Blackboard blackboard) {
-
+    Uri uri =  Uri.https(url, _KEY_ENDPOINT_BOARD);
+  
+    return http.post(
+      uri,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(blackboard.toJson()),
+    );
+    
   }
 
   @override

@@ -3,7 +3,11 @@ import 'message.dart';
 
 class Blackboard{
 
-  Blackboard(this.name,this.deprecationTime,this.message);
+  Blackboard(String name,{int deprecationTime,Message message}){
+    this.name = name;
+    this.deprecationTime = deprecationTime ?? 60;
+    this.message = message;
+  }
 
   // The name of a blackboard, also unique identifier
   String name;
@@ -23,14 +27,18 @@ class Blackboard{
     int deprecationTime = json[_KEY_DEPRECATION_TIME];
     Message message = Message.fromJson(json[_KEY_MESSAGE]);
 
-    return Blackboard(name,deprecationTime,message);
+    return Blackboard(name,deprecationTime: deprecationTime,message: message);
   }
 
   Map<String,dynamic> toJson(){
+
+    Map<String,dynamic> messageDoc = {};
+    if(message != null) messageDoc = message.toJson();
+
     return {
       _KEY_NAME: name,
       _KEY_DEPRECATION_TIME: deprecationTime,
-      _KEY_MESSAGE: message.toJson(),
+      _KEY_MESSAGE: messageDoc,
     };
   }
 }

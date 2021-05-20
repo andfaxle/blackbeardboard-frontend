@@ -77,6 +77,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     backendConnector = BackendConnector(BackendType.MOCK);
     backendConnector.registerOnBoardChange("name", onBoardChanged);
+
   }
 
  

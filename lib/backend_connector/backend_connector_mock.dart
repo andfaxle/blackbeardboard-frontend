@@ -1,8 +1,6 @@
 
 import 'package:blackbeards_board/error_handling/app_exeption.dart';
 import 'package:blackbeards_board/models/blackboard.dart';
-import 'package:blackbeards_board/models/message.dart';
-import 'package:flutter/cupertino.dart';
 import 'abstract_backend_connector.dart';
 
 class BackendConnectorMock implements BackendConnector{

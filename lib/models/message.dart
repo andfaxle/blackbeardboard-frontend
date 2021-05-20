@@ -6,8 +6,6 @@ class Message{
     this.timestamp = timestamp ?? DateTime.now().millisecondsSinceEpoch;
   }
 
-
-
   // The content of the message
   String content;
 
