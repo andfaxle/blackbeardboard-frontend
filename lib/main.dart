@@ -46,41 +46,90 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Future<void> _displayCreateNewBlackboardDialog(BuildContext context) async {
-    showDialog(
-        context: context,
-        builder: (_) => new AlertDialog(
-          title: new Text("Create New Blackboard"),
-          content: TextField(
-            onChanged: (value) {
-              setState(() {
-                String valueText = value;
-              });
-            },
-            //controller: _textFieldController,
-            decoration: InputDecoration(hintText: "Blackboard name"),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text('Create'),
-              onPressed: () {
-                  backendConnector.createBlackboard(new Blackboard("valueText", 100, new Message("Diese Message ist ein Test!")));
-                  Navigator.of(context).pop();
-              },
-            )
-          ],
-        ));
-  }
-
   @override
   void initState() {
     super.initState();
     backendConnector = BackendConnector(BackendType.MOCK);
     backendConnector.registerOnBoardChange("name", onBoardChanged);
+    backendConnector.getAllBlackboardNames().then(
+            (List<String> names){
+          setState(() {
+            blackboardNames = names;
+          });
+        }
+    );
 
+    backendConnector.registerOnBoardAdded(onBoardAdded);
+    backendConnector.registerOnBoardRemoved(onBoardRemoved);
   }
 
- 
+  void onBoardAdded(String name){
+    setState(() {
+      blackboardNames.add(name);
+    });
+  }
+
+  void onBoardRemoved(String name){
+    setState(() {
+      blackboardNames.remove(name);
+    });
+  }
+
+  List<String> blackboardNames = [];
+  int currentSelectedBlackboard;
+
+/*Dialog for creating an new Blackboard
+  The Blackboard has to be given a name and optionally the deprecation time and a message.
+ */
+  Future<void> _displayCreateNewBlackboardDialog(BuildContext context) async {
+    TextEditingController blackboardNameController;
+    TextEditingController deprecationTimeController;
+    TextEditingController messageController;
+    showDialog(
+        context: context,
+        builder: (_) => new AlertDialog(
+          title: new Text("Create New Blackboard"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                onChanged: (value) {
+                  setState(() {
+                  });
+                },
+                controller: blackboardNameController = new TextEditingController(),
+                decoration: InputDecoration(hintText: "Blackboard name"),
+              ),
+              TextField(
+                onChanged: (value) {
+                  setState(() {
+                  });
+                },
+                controller: deprecationTimeController = new TextEditingController(),
+                decoration: InputDecoration(hintText: "Deprecation Time"),
+              ),
+              TextField(
+                onChanged: (value) {
+                  setState(() {
+                  });
+                },
+                controller: messageController = new TextEditingController(),
+                decoration: InputDecoration(hintText: "Message"),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Create'),
+              onPressed: () {
+                backendConnector.createBlackboard(new Blackboard(blackboardNameController.text,
+                    deprecationTime: int.parse(deprecationTimeController.text), message: new Message(messageController.text)));
+                Navigator.of(context).pop();
+              },
+            )
+          ],
+        ));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -93,17 +142,23 @@ class _MyHomePageState extends State<MyHomePage> {
           Expanded(
             flex: 1,
             child: ListView.builder(
+              itemCount: blackboardNames.length,
               padding: EdgeInsets.all(4),
               itemBuilder: (BuildContext context, int index){
                 return Container(
                   height: MediaQuery.of(context).size.width/8,
                   child: Tapable(
-                    onTap: () => Scaffold.of(context).showSnackBar(SnackBar(content: Text(index.toString()))),
-                  child: Card(
-                    child: Padding(
+                    onTap: (){
+                  setState(() {
+                    currentSelectedBlackboard = index;
+                  });
+                },
+                      child: Card(
+                      child:
+                     Padding(
                       padding: EdgeInsets.all(16),
                       child: Center(
-                        child: Text("Das ist Tile $index", style: TextStyle(color: Colors.white),textAlign: TextAlign.center),
+                        child: Text(blackboardNames[index], style: TextStyle(color: Colors.white, fontSize: 25),textAlign: TextAlign.center),
                       ),
                     ),
                     color: Colors.black,
@@ -119,14 +174,14 @@ class _MyHomePageState extends State<MyHomePage> {
               color: Colors.black,
               height: MediaQuery.of(context).size.width*0.375,
               margin: EdgeInsets.only(right: 8),
-              child: FutureBuilder<Blackboard>(
-                future: backendConnector.getBoard("Test"),
+              child: currentSelectedBlackboard == null? Container(): FutureBuilder<Blackboard>(
+                future: backendConnector.getBoard(blackboardNames[currentSelectedBlackboard]),
                 builder: (BuildContext context, AsyncSnapshot<Blackboard> snapshot) {
                   if(snapshot.hasError){
                     return Text("Someting unexpected happend");
                   }
                   if(snapshot.hasData){
-                    return Center(child: Text(snapshot.data.name, style: TextStyle(color: Colors.white),textAlign: TextAlign.center));
+                    return Center(child: Text(snapshot.data.name, style: TextStyle(color: Colors.white, fontSize: 40),textAlign: TextAlign.center));
                   }else{
                     return Center(
                         child: SizedBox(
