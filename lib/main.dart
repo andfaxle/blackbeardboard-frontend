@@ -1,4 +1,5 @@
 import 'package:blackbeards_board/backend_connector.dart';
+import 'package:blackbeards_board/tapable.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -41,6 +42,12 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  bool listItemTapped(){
+    setState(() {
+
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -51,10 +58,9 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
 
-
     return Scaffold(
         appBar: AppBar(
-          title: Text("Titel"),
+          title: Text("BlackBeardBoard"),
         ),
         body: Row(children: <Widget>[
           Expanded(
@@ -64,6 +70,8 @@ class _MyHomePageState extends State<MyHomePage> {
               itemBuilder: (BuildContext context, int index){
                 return Container(
                   height: MediaQuery.of(context).size.width/8,
+                  child: Tapable(
+                    onTap: () => Scaffold.of(context).showSnackBar(SnackBar(content: Text(index.toString()))),
                   child: Card(
                     child: Padding(
                       padding: EdgeInsets.all(16),
@@ -73,9 +81,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                     color: Colors.black,
                   ),
+                  )
                 );
               },
-
             )
           ),
           Expanded(
@@ -83,7 +91,7 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Container (
               color: Colors.black,
               height: MediaQuery.of(context).size.width*0.375,
-              //padding: EdgeInsets.only(right: 600),
+              margin: EdgeInsets.only(right: 8),
               child: FutureBuilder<Blackboard>(
                 future: backendConnector.getBoard("Test"),
                 builder: (BuildContext context, AsyncSnapshot<Blackboard> snapshot) {
@@ -93,10 +101,12 @@ class _MyHomePageState extends State<MyHomePage> {
                   if(snapshot.hasData){
                     return Center(child: Text(snapshot.data.name, style: TextStyle(color: Colors.white),textAlign: TextAlign.center));
                   }else{
-                    return SizedBox(
-                      width: 75,
-                      height: 75,
-                      child: CircularProgressIndicator(),
+                    return Center(
+                        child: SizedBox(
+                          width: 75,
+                          height: 75,
+                          child: CircularProgressIndicator(),
+                        )
                     );
                   }
                 },
