@@ -1,23 +1,30 @@
 
+import 'package:blackbeards_board/error_handling/app_exeption.dart';
 import 'package:blackbeards_board/models/blackboard.dart';
 import 'package:blackbeards_board/models/message.dart';
+import 'package:flutter/cupertino.dart';
 import 'abstract_backend_connector.dart';
 
 class BackendConnectorMock implements BackendConnector{
 
-  Future createBlackboard(Blackboard blackboard) async {
+  List<Blackboard> data = [];
 
+  Future createBlackboard(Blackboard blackboard) async {
+    data.add(blackboard);
   }
 
   Future<Blackboard> getBoard(String name) async {
     await Future.delayed(Duration(milliseconds: 3000));
 
-    int timestampNow = DateTime.now().millisecondsSinceEpoch;
-    Message message = Message("Das ist eine Testnachricht",timestampNow);
-    return Blackboard("Toller Name",60,message);
+    for(Blackboard blackboard in data){
+      if(blackboard.name == name){
+        return blackboard;
+      }
+    }
+    throw NotFoundException('There is no board with this name');
   }
 
-  Future<List<String>> getAllBlackboardNames(){
+  Future<List<String>> getAllBlackboardNames() async{
 
   }
 
@@ -41,4 +48,6 @@ class BackendConnectorMock implements BackendConnector{
 
   }
 
+
 }
+
