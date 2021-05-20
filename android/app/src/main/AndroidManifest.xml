@@ -1,10 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="de.dhbw.blackbeards_board">
+    <uses-permission android:name="android.permission.INTERNET" />
    <application
         android:label="blackbeards_board"
         android:icon="@mipmap/ic_launcher">
        <!-- Required to fetch data from the internet. -->
-       <uses-permission android:name="android.permission.INTERNET" />
+
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"

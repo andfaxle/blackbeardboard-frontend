@@ -8,29 +8,29 @@ import 'package:http/http.dart' as http;
 
 class BackendConnectorReal implements BackendConnector{
 
-  String url = "127.0.0.1";
+  String url = "localhost:8080";
 
-  static const _KEY_ENDPOINT_BOARD = "board";
-  static const _KEY_ENDPOINT_BOARDS = "boards";
+  static const _KEY_ENDPOINT_BOARD = "/board";
+  static const _KEY_ENDPOINT_BOARDS = "/boards";
 
-  static const _KEY_ENDPOINT_BOARD_CHANGED = "board_changed";
-  static const _KEY_ENDPOINT_BOARD_ADDED = "board_added";
-  static const _KEY_ENDPOINT_BOARD_DELETED = "board_deleted";
+  static const _KEY_ENDPOINT_BOARD_CHANGED = "/board_changed";
+  static const _KEY_ENDPOINT_BOARD_ADDED = "/board_added";
+  static const _KEY_ENDPOINT_BOARD_DELETED = "/board_deleted";
 
 
 
   @override
-  Future createBlackboard(Blackboard blackboard) {
-    Uri uri =  Uri.https(url, _KEY_ENDPOINT_BOARD);
-  
-    return http.post(
+  Future createBlackboard(Blackboard blackboard) async {
+    Uri uri =  Uri.http(url, _KEY_ENDPOINT_BOARD);
+    print(uri);
+    http.Response response = await http.post(
       uri,
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode(blackboard.toJson()),
     );
-    
+    print(response);
   }
 
   @override
