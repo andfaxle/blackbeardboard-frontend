@@ -92,15 +92,22 @@ class _MyHomePageState extends State<MyHomePage> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(
+              TextFormField(
                 onChanged: (value) {
                   setState(() {
                   });
                 },
                 controller: blackboardNameController = new TextEditingController(),
                 decoration: InputDecoration(hintText: "Blackboard name"),
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return 'Bitte einen Blackboardnamen eingeben!';
+                  }
+                  return null;
+                },
               ),
               TextField(
+                keyboardType: TextInputType.number,
                 onChanged: (value) {
                   setState(() {
                   });
