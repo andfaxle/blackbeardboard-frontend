@@ -110,7 +110,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     },
                     controller: deprecationTimeController =
                         new TextEditingController(),
-                    decoration: InputDecoration(hintText: "Deprecation Time"),
+                    decoration:
+                        InputDecoration(hintText: "Deprecation Time (sec.)"),
                   ),
                   TextField(
                     onChanged: (value) {
@@ -122,6 +123,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 ],
               ),
               actions: <Widget>[
+                TextButton(
+                    child: Text('Cancel'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    }),
                 ElevatedButton(
                   child: Text('Create'),
                   onPressed: () {
@@ -138,8 +144,73 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _displayUpdateBlackboardDialog(BuildContext context) async {
-    print("Tapped");
-    //TODO: Update Blackboard Dialog
+    TextEditingController deprecationTimeController;
+    TextEditingController messageController;
+    showDialog(
+      context: context,
+      builder: (_) => new AlertDialog(
+        title:
+            Text("Update '" + blackboardNames[currentSelectedBlackboard] + "'"),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: <Widget>[
+              Text("New Message:"),
+              TextField(
+                onChanged: (value) {
+                  setState(() {});
+                },
+                controller: messageController = new TextEditingController(),
+                decoration: InputDecoration(hintText: "Message"),
+              ),
+              SizedBox(height: 15),
+              Text("New deprecation time:"),
+              TextField(
+                keyboardType: TextInputType.number,
+                onChanged: (value) {
+                  setState(() {});
+                },
+                controller: deprecationTimeController =
+                    new TextEditingController(),
+                decoration:
+                    InputDecoration(hintText: "Deprecation Time (sec.)"),
+              ),
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          ElevatedButton(
+              child: Text("Delete '" +
+                  blackboardNames[currentSelectedBlackboard] +
+                  "'"),
+              style: TextButton.styleFrom(
+                primary: Colors.white,
+                backgroundColor: Colors.red,
+              ),
+              onPressed: () {
+                print("Delete '" +
+                    blackboardNames[currentSelectedBlackboard] +
+                    "'");
+                //TODO: Delete current Blackboard
+                Navigator.of(context).pop();
+              }),
+          TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              }),
+          ElevatedButton(
+              child: Text("Update '" +
+                  blackboardNames[currentSelectedBlackboard] +
+                  "'"),
+              style: TextButton.styleFrom(),
+              onPressed: () {
+                print("delete all");
+                //TODO: Update Blackboard
+                Navigator.of(context).pop();
+              }),
+        ],
+      ),
+    );
   }
 
   Future<void> _displayDeleteAllBlackboardsDialog(BuildContext context) async {
@@ -157,7 +228,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
         actions: <Widget>[
-          ElevatedButton(
+          TextButton(
               child: Text('Cancel'),
               onPressed: () {
                 Navigator.of(context).pop();
@@ -269,6 +340,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                     ),
                                   if (snapshot.data.isMessageDeprecated())
                                     Text('This message is deprecated!',
+                                        style: TextStyle(
+                                            color: Colors.red, fontSize: 11)),
+                                  if (snapshot.data.isMessageDeprecated())
+                                    Text('Click to write an new one!',
                                         style: TextStyle(
                                             color: Colors.red, fontSize: 11)),
                                 ]));
