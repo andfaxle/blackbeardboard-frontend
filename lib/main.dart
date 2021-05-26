@@ -144,6 +144,10 @@ class _MyHomePageState extends State<MyHomePage> {
     print("Tapped");
   }
 
+  Future<void> _displayDeleteAllBlackboardsDialog(BuildContext context) async {
+    print("delete all");
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -241,16 +245,33 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           )),
         ]),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            _displayCreateNewBlackboardDialog(context);
-          },
-          label: const Text('New Blackboard'),
-          icon: const Icon(Icons.add),
-          backgroundColor: Colors.blue,
-        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
 
-        floatingActionButtonLocation: FloatingActionButtonLocation.startFloat
+        floatingActionButton: Padding (
+          padding: const EdgeInsets.all(8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            FloatingActionButton.extended(
+            onPressed: () {
+              _displayCreateNewBlackboardDialog(context);
+            },
+            label: const Text('New Blackboard'),
+            icon: const Icon(Icons.add),
+            backgroundColor: Colors.blue,
+          ),
+            SizedBox(width: 20),
+            FloatingActionButton.extended(
+              onPressed: () {
+                _displayDeleteAllBlackboardsDialog(context);
+              },
+              label: const Text('Delete all Blackboards'),
+              icon: const Icon(Icons.delete_forever),
+              backgroundColor: Colors.red,
+            )],
+        )),
+
+
     );
   }
 }
