@@ -5,15 +5,10 @@ import 'package:blackbeards_board/tapable.dart';
 import 'package:flutter/material.dart';
 
 void main() {
-  foo(j: 5);
-
   runApp(MyApp());
 }
 
-void foo({int index, int j}) {
-  print(index);
-}
-
+//Top Level Widget for the App
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -29,6 +24,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// Widget for the Website
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key}) : super(key: key);
 
@@ -63,23 +59,28 @@ class _MyHomePageState extends State<MyHomePage> {
     backendConnector.registerOnBoardRemoved(onBoardRemoved);
   }
 
+  // BB was added to the server --> Notification and name of the BB is added to the internal list
   void onBoardAdded(String name){
     setState(() {
       blackboardNames.add(name);
     });
   }
 
+  // BB was deleted from the server --> Notification and name of the BB is removed from the internal list
   void onBoardRemoved(String name){
     setState(() {
       blackboardNames.remove(name);
     });
   }
 
+  // internal List of Strings containing all BB names
   List<String> blackboardNames = [];
+
+  // index of the currently selected BB
   int currentSelectedBlackboard;
 
-/*Dialog for creating an new Blackboard
-  The Blackboard has to be given a name and optionally the deprecation time and a message.
+/*Dialog for creating an new BB
+  The BB has to be given a name, the deprecation time and a message.
  */
   Future<void> _displayCreateNewBlackboardDialog(BuildContext context) async {
     TextEditingController blackboardNameController;
@@ -92,7 +93,7 @@ class _MyHomePageState extends State<MyHomePage> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(
+              TextFormField(
                 onChanged: (value) {
                   setState(() {
                   });
@@ -101,6 +102,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 decoration: InputDecoration(hintText: "Blackboard name"),
               ),
               TextField(
+                keyboardType: TextInputType.number,
                 onChanged: (value) {
                   setState(() {
                   });
@@ -123,7 +125,8 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Text('Create'),
               onPressed: () {
                 backendConnector.createBlackboard(new Blackboard(blackboardNameController.text,
-                    deprecationTime: int.parse(deprecationTimeController.text), message: new Message(messageController.text)));
+                    deprecationTime: int.parse(deprecationTimeController.text),
+                    message: new Message(messageController.text)));
                 Navigator.of(context).pop();
               },
             )
@@ -181,7 +184,26 @@ class _MyHomePageState extends State<MyHomePage> {
                     return Text("Someting unexpected happend");
                   }
                   if(snapshot.hasData){
-                    return Center(child: Text(snapshot.data.name, style: TextStyle(color: Colors.white, fontSize: 40),textAlign: TextAlign.center));
+                      return Column (
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(snapshot.data.name,
+                            style: TextStyle(color: Colors.white, fontSize: 45),
+                            textAlign: TextAlign.center),
+                          SizedBox(height: 50),
+                          Text("— "+snapshot.data.message.content+" —",
+                              style: TextStyle(color: Colors.white, fontSize: 25),
+                              textAlign: TextAlign.center),
+                          SizedBox(height: 100),
+                          Tooltip(
+                            message: 'This message is deprecated!',
+                            child: Icon(
+                            Icons.announcement,
+                            color: Colors.red,
+                            size: 35,
+                          )),
+                      ]);
                   }else{
                     return Center(
                         child: SizedBox(
