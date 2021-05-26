@@ -18,14 +18,37 @@ class Blackboard{
   // The content of a blackboard
   Message message;
 
-  static const _KEY_NAME = "name";
-  static const _KEY_DEPRECATION_TIME = "deprecationTime";
-  static const _KEY_MESSAGE = "message";
+  void onTimeout(Function callback) async{
+
+    int messageTime = message.timestamp + deprecationTime * 1000;
+    int now = DateTime.now().millisecondsSinceEpoch;
+
+    // in millisecs
+    int timeToTimeout = messageTime - now;
+    if(timeToTimeout > 0){
+      await Future.delayed(Duration(milliseconds: timeToTimeout));
+      callback();
+    }
+
+  }
+
+  bool isMessageDeprecated(){
+    if(message != null){
+      int messageTime = message.timestamp + deprecationTime * 1000;
+      int now = DateTime.now().millisecondsSinceEpoch;
+      if(messageTime <= now) return true;
+    }
+    return false;
+  }
+
+  static const KEY_NAME = "name";
+  static const KEY_DEPRECATION_TIME = "deprecationTime";
+  static const KEY_MESSAGE = "message";
 
   static Blackboard fromJson(Map<String,dynamic> json){
-    String name = json[_KEY_NAME];
-    int deprecationTime = json[_KEY_DEPRECATION_TIME];
-    Message message = Message.fromJson(json[_KEY_MESSAGE]);
+    String name = json[KEY_NAME];
+    int deprecationTime = json[KEY_DEPRECATION_TIME];
+    Message message = Message.fromJson(json[KEY_MESSAGE]);
 
     return Blackboard(name,deprecationTime: deprecationTime,message: message);
   }
@@ -36,9 +59,25 @@ class Blackboard{
     if(message != null) messageDoc = message.toJson();
 
     return {
-      _KEY_NAME: name,
-      _KEY_DEPRECATION_TIME: deprecationTime,
-      _KEY_MESSAGE: messageDoc,
+      KEY_NAME: name,
+      KEY_DEPRECATION_TIME: deprecationTime,
+      KEY_MESSAGE: messageDoc,
     };
+  }
+
+  Map<String,dynamic> toParams(){
+
+    Map<String,String> params = {};
+
+    if(this.name!= null) params[KEY_NAME] = this.name;
+    if(this.deprecationTime!= null) params[KEY_DEPRECATION_TIME] = this.deprecationTime.toString();
+
+    return params;
+
+  }
+
+  @override
+  String toString() {
+    return 'Blackboard: {name: ${name}, deprecationTime: ${deprecationTime}, message: ${message}}';
   }
 }

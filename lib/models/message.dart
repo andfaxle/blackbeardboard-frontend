@@ -29,4 +29,9 @@ class Message{
       _KEY_TIMESTAMP: timestamp,
     };
   }
+  @override
+  String toString() {
+    return 'Message: {content: ${content}, timestamp: ${timestamp}}';
+  }
+
 }
