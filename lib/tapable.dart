@@ -34,7 +34,6 @@ class Tapable extends StatelessWidget{
 
             color: overlayColor,
             child: InkWell(
-
               focusColor: Colors.transparent,
               borderRadius: BorderRadius.circular(radius),
               onTap: onTap,

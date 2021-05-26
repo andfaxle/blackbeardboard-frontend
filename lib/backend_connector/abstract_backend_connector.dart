@@ -40,9 +40,9 @@ abstract class BackendConnector{
 
   void registerOnBoardChange(String name,Function(Blackboard blackboard) callback);
 
-  void registerOnBoardAdded(Function(String name) callback);
+  void registerOnBoardsAdded(Function(List<String> name) callback);
 
-  void registerOnBoardRemoved(Function(String name) callback);
+  void registerOnBoardsRemoved(Function(List<String> name) callback);
 
 }
 

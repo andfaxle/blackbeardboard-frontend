@@ -19,7 +19,7 @@ class BackendConnectorMock implements BackendConnector{
     await Future.delayed(Duration(milliseconds: 2000));
     data.add(blackboard);
     onMessage("Board created successfully");
-    onBoardAddedCallback(blackboard.name);
+    onBoardsAddedCallback([blackboard.name]);
   }
 
   @override
@@ -81,9 +81,9 @@ class BackendConnectorMock implements BackendConnector{
 
     for(Blackboard blackboard in data){
       if(blackboard.name == name){
-        data.remove(blackboard);
 
-        onBoardRemovedCallback(name);
+        data.remove(blackboard);
+        onBoardsRemovedCallback([blackboard.name]);
 
         return null;
       }
@@ -96,10 +96,12 @@ class BackendConnectorMock implements BackendConnector{
   Future deleteAllBlackboards() async{
 
     await Future.delayed(Duration(milliseconds: 2000));
-
+    List<String> names = [];
     for(Blackboard blackboard in data){
-      onBoardRemovedCallback(blackboard.name);
+      names.add(blackboard.name);
     }
+
+    onBoardsRemovedCallback(names);
 
     data = [];
   }
@@ -108,8 +110,8 @@ class BackendConnectorMock implements BackendConnector{
 
   String onBoardChangedName;
   Function(Blackboard blackboard) onBoardChangedCallback;
-  Function(String name) onBoardAddedCallback;
-  Function(String name) onBoardRemovedCallback;
+  Function(List<String> name) onBoardsAddedCallback;
+  Function(List<String> name) onBoardsRemovedCallback;
 
   @override
   void registerOnBoardChange(String name,Function(Blackboard blackboard) callback){
@@ -118,13 +120,13 @@ class BackendConnectorMock implements BackendConnector{
   }
 
   @override
-  void registerOnBoardAdded(Function(String name) callback){
-    onBoardAddedCallback = callback;
+  void registerOnBoardsAdded(Function(List<String> name) callback){
+    onBoardsAddedCallback = callback;
   }
 
   @override
-  void registerOnBoardRemoved(Function(String name) callback){
-    onBoardRemovedCallback = callback;
+  void registerOnBoardsRemoved(Function(List<String> name) callback){
+    onBoardsRemovedCallback = callback;
   }
 
 

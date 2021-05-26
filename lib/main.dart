@@ -55,14 +55,14 @@ class _MyHomePageState extends State<MyHomePage> {
         }
     );
 
-    backendConnector.registerOnBoardAdded(onBoardAdded);
-    backendConnector.registerOnBoardRemoved(onBoardRemoved);
+    backendConnector.registerOnBoardsAdded(onBoardsAdded);
+    backendConnector.registerOnBoardsRemoved(onBoardsRemoved);
   }
 
   // BB was added to the server --> Notification and name of the BB is added to the internal list
-  void onBoardAdded(String name){
+  void onBoardsAdded(List<String> names){
     setState(() {
-      blackboardNames.add(name);
+      blackboardNames.addAll(names);
     });
   }
 
@@ -71,9 +71,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   // BB was deleted from the server --> Notification and name of the BB is removed from the internal list
-  void onBoardRemoved(String name){
+  void onBoardsRemoved(List<String> names){
     setState(() {
-      blackboardNames.remove(name);
+      for(String name in names){
+        blackboardNames.remove(name);
+      }
     });
   }
 

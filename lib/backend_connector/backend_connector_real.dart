@@ -14,22 +14,39 @@ class BackendConnectorReal implements BackendConnector{
 
   BackendConnectorReal({Function(String) onMessage}){
     this.onMessage = onMessage;
+    registerToSEE();
+  }
+
+  void registerToSEE(){
+
+    Uri uri =  Uri.http(url, _KEY_ENDPOINT_LISTEN);
+
+    Stream<Response> stream = http.get(uri,headers: _EVENTS_HEADER).asStream();
+    stream.listen((event) { 
+      print(event);
+    });
   }
 
   static const String url = "localhost:8080";
 
   static const _KEY_ENDPOINT_BOARD = "/board";
   static const _KEY_ENDPOINT_BOARDS = "/boards";
+  static const _KEY_ENDPOINT_LISTEN = "/listen";
 
-  static const _KEY_ENDPOINT_BOARD_CHANGED = "/board_changed";
-  static const _KEY_ENDPOINT_BOARD_ADDED = "/board_added";
-  static const _KEY_ENDPOINT_BOARD_DELETED = "/board_deleted";
+  static const _KEY_EVENT_BOARD_CHANGED = "board_changed";
+  static const _KEY_EVENT_BOARD_ADDED = "board_added";
+  static const _KEY_EVENT_BOARD_DELETED = "board_deleted";
 
   // in seconds
   static const _TIMEOUT = 10;
 
-  static const Map<String,dynamic> _STANDARD_HEADER = <String, String>{
+  static const Map<String,String> _STANDARD_HEADER = <String, String>{
     'Content-Type': 'application/json; charset=UTF-8',
+  };
+
+  static const Map<String,String> _EVENTS_HEADER = <String, String>{
+    'Content-Type': 'application/json; charset=UTF-8',
+    'Cache-Control': 'no-cache',
   };
 
   @override
@@ -125,6 +142,7 @@ class BackendConnectorReal implements BackendConnector{
 
   @override
   Future updateBlackboard(Blackboard blackboard) async {
+
     Uri uri =  Uri.http(url, _KEY_ENDPOINT_BOARD,blackboard.toParams());
 
     Response response = await http.put(
@@ -192,21 +210,19 @@ class BackendConnectorReal implements BackendConnector{
 
   }
 
-
-
   @override
-  void registerOnBoardAdded(Function(String name) callback) {
-    // TODO: implement registerOnBoardAdded
+  void registerOnBoardsAdded(Function(List<String> name) callback) {
+
   }
 
   @override
   void registerOnBoardChange(String name, Function(Blackboard blackboard) callback) {
-    // TODO: implement registerOnBoardChange
+
   }
 
   @override
-  void registerOnBoardRemoved(Function(String name) callback) {
-    // TODO: implement registerOnBoardRemoved
+  void registerOnBoardsRemoved(Function(List<String> name) callback) {
+
   }
 
 

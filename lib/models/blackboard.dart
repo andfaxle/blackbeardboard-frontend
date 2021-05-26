@@ -71,6 +71,7 @@ class Blackboard{
 
     if(this.name!= null) params[KEY_NAME] = this.name;
     if(this.deprecationTime!= null) params[KEY_DEPRECATION_TIME] = this.deprecationTime.toString();
+    if(this.message != null) params[KEY_MESSAGE] = this.message.content;
 
     return params;
 
