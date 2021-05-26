@@ -45,7 +45,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    backendConnector = BackendConnector(BackendType.MOCK);
+    backendConnector = BackendConnector(BackendType.MOCK, onMessage: onBackendMessage);
     backendConnector.registerOnBoardChange("name", onBoardChanged);
     backendConnector.getAllBlackboardNames().then(
             (List<String> names){
@@ -64,6 +64,10 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       blackboardNames.add(name);
     });
+  }
+
+  void onBackendMessage(String message){
+    ScaffoldMessenger.of(context).showSnackBar(new SnackBar(content: Text(message)));
   }
 
   // BB was deleted from the server --> Notification and name of the BB is removed from the internal list
@@ -134,6 +138,10 @@ class _MyHomePageState extends State<MyHomePage> {
         ));
   }
 
+  Future<void> _displayUpdateBlackboardDialog(BuildContext context) async {
+    print("Tapped");
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -157,8 +165,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   });
                 },
                       child: Card(
-                      child:
-                     Padding(
+                      child: Padding(
                       padding: EdgeInsets.all(16),
                       child: Center(
                         child: Text(blackboardNames[index], style: TextStyle(color: Colors.white, fontSize: 25),textAlign: TextAlign.center),
@@ -177,16 +184,26 @@ class _MyHomePageState extends State<MyHomePage> {
               color: Colors.black,
               height: MediaQuery.of(context).size.width*0.375,
               margin: EdgeInsets.only(right: 8),
-              child: currentSelectedBlackboard == null? Container(): FutureBuilder<Blackboard>(
+                child: Tapable (
+                    onTap: (){
+                      if(currentSelectedBlackboard != null){
+                        _displayUpdateBlackboardDialog(context);
+                      }
+                    },
+                    child: currentSelectedBlackboard == null? Container(): FutureBuilder<Blackboard>(
                 future: backendConnector.getBoard(blackboardNames[currentSelectedBlackboard]),
                 builder: (BuildContext context, AsyncSnapshot<Blackboard> snapshot) {
                   if(snapshot.hasError){
                     return Text("Someting unexpected happend");
                   }
-                  if(snapshot.hasData){
-                      return Column (
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                  if(snapshot.connectionState == ConnectionState.done && snapshot.hasData){
+                    snapshot.data.onTimeout((){setState(() {
+
+                    });});
+                      return Center(
+                        child: Column (
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(snapshot.data.name,
                             style: TextStyle(color: Colors.white, fontSize: 45),
@@ -196,27 +213,31 @@ class _MyHomePageState extends State<MyHomePage> {
                               style: TextStyle(color: Colors.white, fontSize: 25),
                               textAlign: TextAlign.center),
                           SizedBox(height: 100),
-                          Tooltip(
-                            message: 'This message is deprecated!',
-                            child: Icon(
-                            Icons.announcement,
-                            color: Colors.red,
-                            size: 35,
-                          )),
-                      ]);
+                             if(snapshot.data.isMessageDeprecated())
+                               Icon(
+                                 Icons.announcement,
+                                 color: Colors.red,
+                                 size: 35,
+                               ),
+                          if(snapshot.data.isMessageDeprecated())
+                               Text('This message is deprecated!',
+                                   style: TextStyle(
+                                       color: Colors.red, fontSize: 11)),
+                      ]));
                   }else{
                     return Center(
                         child: SizedBox(
                           width: 75,
                           height: 75,
                           child: CircularProgressIndicator(),
-                        )
+                        ),
                     );
                   }
                 },
+
               ),
-            )
-          )
+            ),
+          )),
         ]),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () {
@@ -226,6 +247,7 @@ class _MyHomePageState extends State<MyHomePage> {
           icon: const Icon(Icons.add),
           backgroundColor: Colors.blue,
         ),
+
         floatingActionButtonLocation: FloatingActionButtonLocation.startFloat
     );
   }
