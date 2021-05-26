@@ -5,6 +5,12 @@ import 'abstract_backend_connector.dart';
 
 class BackendConnectorMock implements BackendConnector{
 
+  Function(String) onMessage;
+
+  BackendConnectorMock({Function(String) onMessage}){
+    this.onMessage = onMessage;
+  }
+
   List<Blackboard> data = [];
 
   @override
@@ -12,7 +18,7 @@ class BackendConnectorMock implements BackendConnector{
 
     await Future.delayed(Duration(milliseconds: 2000));
     data.add(blackboard);
-
+    onMessage("Board created successfully");
     onBoardAddedCallback(blackboard.name);
   }
 

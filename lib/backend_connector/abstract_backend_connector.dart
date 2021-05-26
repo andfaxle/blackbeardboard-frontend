@@ -11,10 +11,17 @@ enum BackendType {
 
 abstract class BackendConnector{
 
-  factory BackendConnector(BackendType type){
+  factory BackendConnector(BackendType type,{Function(String) onMessage}){
+
+    Function(String) nullSaveOnMessage = (String message){
+      if(onMessage != null){
+        onMessage(message);
+      }
+    };
+
     switch(type){
-      case BackendType.MOCK: return BackendConnectorMock();
-      case BackendType.REAL: return BackendConnectorReal();
+      case BackendType.MOCK: return BackendConnectorMock(onMessage:nullSaveOnMessage);
+      case BackendType.REAL: return BackendConnectorReal(onMessage:nullSaveOnMessage);
       default: return null;
     }
   }
