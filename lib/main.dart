@@ -5,6 +5,7 @@ import 'package:blackbeards_board/tapable.dart';
 import 'package:flutter/material.dart';
 
 void main() {
+  BackendConnectorService.init(BackendType.MOCK);
   runApp(MyApp());
 }
 
@@ -32,6 +33,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+
   BackendConnector backendConnector;
 
   void onBoardChanged(Blackboard blackboard) {
@@ -41,8 +43,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    backendConnector =
-        BackendConnector(BackendType.MOCK, onMessage: onBackendMessage);
+    backendConnector = BackendConnectorService.instance;
     backendConnector.registerOnBoardChange("name", onBoardChanged);
     backendConnector.getAllBlackboardNames().then((List<String> names) {
       setState(() {
@@ -241,7 +242,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               onPressed: () {
                 print("delete all");
-                //TODO: Delete all Blackboards
+                backendConnector.deleteAllBlackboards();
                 Navigator.of(context).pop();
               })
         ],

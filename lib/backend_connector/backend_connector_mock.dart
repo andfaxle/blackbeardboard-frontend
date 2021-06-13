@@ -7,7 +7,7 @@ class BackendConnectorMock implements BackendConnector{
 
   Function(String) onMessage;
 
-  BackendConnectorMock({Function(String) onMessage}){
+  BackendConnectorMock({Function(String) onMessage,Function(String) onLog}){
     this.onMessage = onMessage;
   }
 
@@ -15,7 +15,6 @@ class BackendConnectorMock implements BackendConnector{
 
   @override
   Future createBlackboard(Blackboard blackboard) async {
-
     await Future.delayed(Duration(milliseconds: 2000));
     data.add(blackboard);
     onMessage("Board created successfully");
@@ -127,6 +126,12 @@ class BackendConnectorMock implements BackendConnector{
   @override
   void registerOnBoardsRemoved(Function(List<String> name) callback){
     onBoardsRemovedCallback = callback;
+  }
+
+  @override
+  Future<bool> checkBlackboardLock(String name) {
+    // TODO: implement checkBlackboardLock
+    throw UnimplementedError();
   }
 
 

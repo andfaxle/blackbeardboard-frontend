@@ -9,19 +9,40 @@ enum BackendType {
   REAL
 }
 
+class BackendConnectorService{
+  static void init(BackendType type,{Function(String) onMessage,Function(String) onLog}){
+    _instance = BackendConnector(type,onMessage: onMessage,onLog: onLog);
+  }
+
+  static BackendConnector _instance;
+
+  static BackendConnector get instance => _instance;
+}
+
 abstract class BackendConnector{
 
-  factory BackendConnector(BackendType type,{Function(String) onMessage}){
+  factory BackendConnector(BackendType type,{Function(String) onMessage,Function(String) onLog}){
 
     Function(String) nullSaveOnMessage = (String message){
       if(onMessage != null){
         onMessage(message);
+      }else{
+        // if no onMessage is defined, print it to console
+        print("SERVER CONNECTOR MESSAGE: " + message);
+      }
+    };
+    Function(String) nullSaveOnLog = (String message){
+      if(onLog != null){
+        onLog(message);
+      }else{
+        // if no onLog is defined, print it to console
+        print("SERVER CONNECTOR LOG: " + message);
       }
     };
 
     switch(type){
-      case BackendType.MOCK: return BackendConnectorMock(onMessage:nullSaveOnMessage);
-      case BackendType.REAL: return BackendConnectorReal(onMessage:nullSaveOnMessage);
+      case BackendType.MOCK: return BackendConnectorMock(onMessage:nullSaveOnMessage,onLog:nullSaveOnLog);
+      case BackendType.REAL: return BackendConnectorReal(onMessage:nullSaveOnMessage,onLog: nullSaveOnLog);
       default: return null;
     }
   }
@@ -35,6 +56,8 @@ abstract class BackendConnector{
   Future updateBlackboard(Blackboard blackboard);
 
   Future deleteBlackboard(String name);
+
+  Future<bool> checkBlackboardLock(String name);
 
   Future deleteAllBlackboards();
 

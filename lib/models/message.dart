@@ -1,4 +1,4 @@
-
+import 'package:blackbeards_board/extensions.dart';
 class Message{
 
   Message(String content,{int timestamp}){
@@ -16,8 +16,8 @@ class Message{
   static const _KEY_TIMESTAMP = "timestamp";
 
   static Message fromJson(Map<String,dynamic> json){
-    String content = json[_KEY_CONTENT];
-    int timestamp = json[_KEY_TIMESTAMP];
+    String content = json.getOrNull(_KEY_CONTENT);
+    int timestamp = json.getOrNull(_KEY_CONTENT);
 
     return Message(content, timestamp: timestamp);
   }
