@@ -5,7 +5,7 @@ import 'package:blackbeards_board/tapable.dart';
 import 'package:flutter/material.dart';
 
 void main() {
-  BackendConnectorService.init(BackendType.MOCK);
+  BackendConnectorService.init(BackendType.REAL);
   runApp(MyApp());
 }
 
@@ -44,7 +44,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     backendConnector = BackendConnectorService.instance;
-    backendConnector.registerOnBoardChange("name", onBoardChanged);
+    //todo backendConnector.registerOnBoardChange("name", onBoardChanged);
     backendConnector.getAllBlackboardNames().then((List<String> names) {
       setState(() {
         blackboardNames = names;
