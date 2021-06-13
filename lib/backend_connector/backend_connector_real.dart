@@ -44,9 +44,9 @@ class BackendConnectorReal implements BackendConnector{
     'Cache-Control': 'no-cache',
   };
 
-  BackendConnectorReal({Function(String) onMessage,Function(String) onLog}){
-    this.onMessage = onMessage;
-    this.onLog = onLog;
+  BackendConnectorReal(){
+    onLog = (data) => print(data);
+    onMessage = (data) => print(data);
     registerToSEE();
   }
 
@@ -311,6 +311,16 @@ class BackendConnectorReal implements BackendConnector{
   Future<bool> checkBlackboardLock(String name) {
     // TODO: implement checkBlackboardLock
     throw UnimplementedError();
+  }
+
+  @override
+  void registerBackendInfo(Function(String p1) onBackendInfoMessage) {
+    this.onMessage = onBackendInfoMessage;
+  }
+
+  @override
+  void registerBackendLog(Function(String p1) onBackendLogMessage) {
+    this.onLog = onBackendLogMessage;
   }
 
 }

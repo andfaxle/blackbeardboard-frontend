@@ -22,27 +22,9 @@ class BackendConnectorService{
 abstract class BackendConnector{
 
   factory BackendConnector(BackendType type,{Function(String) onMessage,Function(String) onLog}){
-
-    Function(String) nullSaveOnMessage = (String message){
-      if(onMessage != null){
-        onMessage(message);
-      }else{
-        // if no onMessage is defined, print it to console
-        print("SERVER CONNECTOR MESSAGE: " + message);
-      }
-    };
-    Function(String) nullSaveOnLog = (String message){
-      if(onLog != null){
-        onLog(message);
-      }else{
-        // if no onLog is defined, print it to console
-        print("SERVER CONNECTOR LOG: " + message);
-      }
-    };
-
     switch(type){
-      case BackendType.MOCK: return BackendConnectorMock(onMessage:nullSaveOnMessage,onLog:nullSaveOnLog);
-      case BackendType.REAL: return BackendConnectorReal(onMessage:nullSaveOnMessage,onLog: nullSaveOnLog);
+      case BackendType.MOCK: return BackendConnectorMock();
+      case BackendType.REAL: return BackendConnectorReal();
       default: return null;
     }
   }
@@ -66,6 +48,10 @@ abstract class BackendConnector{
   void registerOnBoardsAdded(Function(List<String> name) callback);
 
   void registerOnBoardsRemoved(Function(List<String> name) callback);
+
+  void registerBackendLog(Function(String) onBackendLogMessage);
+
+  void registerBackendInfo(Function(String) onBackendInfoMessage);
 
 }
 

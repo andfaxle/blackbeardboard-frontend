@@ -6,9 +6,11 @@ import 'abstract_backend_connector.dart';
 class BackendConnectorMock implements BackendConnector{
 
   Function(String) onMessage;
+  Function(String) onLog;
 
-  BackendConnectorMock({Function(String) onMessage,Function(String) onLog}){
-    this.onMessage = onMessage;
+  BackendConnectorMock(){
+    onLog = (data) => print(data);
+    onMessage = (data) => print(data);
   }
 
   List<Blackboard> data = [];
@@ -132,6 +134,16 @@ class BackendConnectorMock implements BackendConnector{
   Future<bool> checkBlackboardLock(String name) {
     // TODO: implement checkBlackboardLock
     throw UnimplementedError();
+  }
+
+  @override
+  void registerBackendInfo(Function(String p1) onBackendInfoMessage) {
+    this.onMessage = onBackendInfoMessage;
+  }
+
+  @override
+  void registerBackendLog(Function(String p1) onBackendLogMessage) {
+    // TODO: implement registerBackendLog
   }
 
 
