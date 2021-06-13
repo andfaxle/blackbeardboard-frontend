@@ -2,11 +2,14 @@ import 'package:blackbeards_board/backend_connector/abstract_backend_connector.d
 import 'package:blackbeards_board/models/blackboard.dart';
 import 'package:blackbeards_board/models/message.dart';
 import 'package:blackbeards_board/tapable.dart';
+import 'package:blackbeards_board/widgets/main_create_new_blackboard_dialog.dart';
+import 'package:blackbeards_board/widgets/main_delete_all_blackboards_dialog.dart';
 import 'package:blackbeards_board/widgets/main_floating_action_button.dart';
+import 'package:blackbeards_board/widgets/main_update_blackboard_dialog.dart';
 import 'package:flutter/material.dart';
 
 void main() {
-  BackendConnectorService.init(BackendType.REAL);
+  BackendConnectorService.init(BackendType.MOCK);
   runApp(MyApp());
 }
 
@@ -34,7 +37,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   BackendConnector backendConnector;
 
   void onBoardChanged(Blackboard blackboard) {
@@ -45,7 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     backendConnector = BackendConnectorService.instance;
-    //todo backendConnector.registerOnBoardChange("name", onBoardChanged);
+    // TODO:backendConnector.registerOnBoardChange("name", onBoardChanged);
     backendConnector.getAllBlackboardNames().then((List<String> names) {
       setState(() {
         blackboardNames = names;
@@ -83,169 +85,88 @@ class _MyHomePageState extends State<MyHomePage> {
   // index of the currently selected BB
   int currentSelectedBlackboard;
 
-/*Dialog for creating an new BB
+  // returns the name of the current blackboard
+  String getcurrentBlackboardName() {
+    return blackboardNames[currentSelectedBlackboard];
+  }
+
+/* Displays the Create New Blackboard Dialog --> .\widgets\main_create_new_blackboard_dialog.dart
   The BB has to be given a name, the deprecation time and a message.
  */
   Future<void> _displayCreateNewBlackboardDialog(BuildContext context) async {
-    TextEditingController blackboardNameController;
-    TextEditingController deprecationTimeController;
-    TextEditingController messageController;
-    showDialog(
-        context: context,
-        builder: (_) => new AlertDialog(
-              title: const Text("Create New Blackboard"),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextFormField(
-                    onChanged: (value) {
-                      setState(() {});
-                    },
-                    controller: blackboardNameController =
-                        new TextEditingController(),
-                    decoration: InputDecoration(hintText: "Blackboard name"),
-                  ),
-                  TextField(
-                    keyboardType: TextInputType.number,
-                    onChanged: (value) {
-                    },
-                    controller: deprecationTimeController =
-                        new TextEditingController(),
-                    decoration:
-                        InputDecoration(hintText: "Deprecation Time (sec.)"),
-                  ),
-                  TextField(
-                    onChanged: (value) {
-                    },
-                    controller: messageController = new TextEditingController(),
-                    decoration: InputDecoration(hintText: "Message"),
-                  ),
-                ],
-              ),
-              actions: <Widget>[
-                TextButton(
-                    child: Text('Cancel'),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    }),
-                ElevatedButton(
-                  child: Text('Create'),
-                  onPressed: () {
-                    backendConnector.createBlackboard(new Blackboard(
-                        blackboardNameController.text,
-                        deprecationTime:
-                            int.parse(deprecationTimeController.text),
-                        message: new Message(messageController.text)));
-                    Navigator.of(context).pop();
-                  },
-                )
-              ],
-            ));
-  }
-
-  Future<void> _displayUpdateBlackboardDialog(BuildContext context) async {
-    TextEditingController deprecationTimeController;
-    TextEditingController messageController;
+    TextEditingController blackboardNameController =
+        new TextEditingController();
+    TextEditingController deprecationTimeController =
+        new TextEditingController();
+    TextEditingController messageController = new TextEditingController();
     showDialog(
       context: context,
-      builder: (_) => new AlertDialog(
-        title:
-            Text("Update '" + blackboardNames[currentSelectedBlackboard] + "'"),
-        content: SingleChildScrollView(
-          child: ListBody(
-            children: <Widget>[
-              Text("New Message:"),
-              TextField(
-                onChanged: (value) {
-                },
-                controller: messageController = new TextEditingController(),
-                decoration: InputDecoration(hintText: "Message"),
-              ),
-              SizedBox(height: 15),
-              Text("New deprecation time:"),
-              TextField(
-                keyboardType: TextInputType.number,
-                onChanged: (value) {
-                },
-                controller: deprecationTimeController =
-                    new TextEditingController(),
-                decoration:
-                    InputDecoration(hintText: "Deprecation Time (sec.)"),
-              ),
-            ],
-          ),
-        ),
-        actions: <Widget>[
-          ElevatedButton(
-              child: Text("Delete '" +
-                  blackboardNames[currentSelectedBlackboard] +
-                  "'"),
-              style: TextButton.styleFrom(
-                primary: Colors.white,
-                backgroundColor: Colors.red,
-              ),
-              onPressed: () {
-                print("Delete '" +
-                    blackboardNames[currentSelectedBlackboard] +
-                    "'");
-                //TODO: Delete current Blackboard
-                Navigator.of(context).pop();
-              }),
-          TextButton(
-              child: Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              }),
-          ElevatedButton(
-              child: Text("Update '" +
-                  blackboardNames[currentSelectedBlackboard] +
-                  "'"),
-              style: TextButton.styleFrom(),
-              onPressed: () {
-                Blackboard newBlackboard = new Blackboard(blackboardNames[currentSelectedBlackboard],
-                    deprecationTime: int.parse(deprecationTimeController.text),
-                    message: new Message(messageController.text));
-                backendConnector.updateBlackboard(newBlackboard);
-                setState(() {});
-                Navigator.of(context).pop();
-              }),
-        ],
+      builder: (_) => new MainCreateNewBlackboardDialog(
+        blackboardNameController: blackboardNameController,
+        deprecationTimeController: deprecationTimeController,
+        messageController: messageController,
+        onCancelPressed: () {
+          Navigator.of(context).pop(); //exit dialog
+        },
+        onCreatePressed: () {
+          backendConnector.createBlackboard(new Blackboard(
+              blackboardNameController.text,
+              deprecationTime: int.parse(deprecationTimeController.text),
+              message: new Message(messageController.text)));
+          Navigator.of(context).pop(); //exit dialog
+        },
       ),
     );
   }
 
+  /* Displays the Update Blackboard Dialog --> .\widgets\main_update_blackboard_dialog.dart
+  The BB has to be given a new deprecation time and a new message.
+ */
+  Future<void> _displayUpdateBlackboardDialog(BuildContext context) async {
+    TextEditingController deprecationTimeController =
+        new TextEditingController();
+    TextEditingController messageController = new TextEditingController();
+    showDialog(
+        context: context,
+        builder: (_) => new MainUpdateBlackboardDialog(
+              messageController: messageController,
+              deprecationTimeController: deprecationTimeController,
+              onDeletePressed: () {
+                backendConnector.deleteBlackboard(getcurrentBlackboardName());
+                currentSelectedBlackboard = null;
+                setState(() {});
+                Navigator.of(context).pop(); //exit dialog
+              },
+              onCancelPressed: () {
+                Navigator.of(context).pop(); //exit dialog
+              },
+              onUpdatePressed: () {
+                Blackboard newBlackboard = new Blackboard(
+                    getcurrentBlackboardName(),
+                    deprecationTime: int.parse(deprecationTimeController.text),
+                    message: new Message(messageController.text));
+                backendConnector.updateBlackboard(newBlackboard);
+                setState(() {});
+                Navigator.of(context).pop(); //exit dialog
+              },
+            ));
+  }
+
+  // Displays the Delete all Blackboards Dialog --> .\widgets\main_delete_all_blackboards_dialog.dart
+
   Future<void> _displayDeleteAllBlackboardsDialog(BuildContext context) async {
     showDialog(
       context: context,
-      builder: (_) => new AlertDialog(
-        title: const Text("Delete all Blackboards permanently?"),
-        content: SingleChildScrollView(
-          child: ListBody(
-            children: const <Widget>[
-              Text("Are you sure you want to delete ALL Blackboards?"),
-              Text(""),
-              Text("This action can not be reverted!"),
-            ],
-          ),
-        ),
-        actions: <Widget>[
-          TextButton(
-              child: Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              }),
-          ElevatedButton(
-              child: Text('Delete all'),
-              style: TextButton.styleFrom(
-                primary: Colors.white,
-                backgroundColor: Colors.red,
-              ),
-              onPressed: () {
-                print("delete all");
-                backendConnector.deleteAllBlackboards();
-                Navigator.of(context).pop();
-              })
-        ],
+      builder: (_) => new MainDeleteAllBlackboardsDialog(
+        onCancelPressed: () {
+          Navigator.of(context).pop(); //exit dialog
+        },
+        onDeleteAllPressed: () {
+          backendConnector.deleteAllBlackboards();
+          currentSelectedBlackboard = null;
+          setState(() {});
+          Navigator.of(context).pop(); //exit dialog
+        },
       ),
     );
   }
@@ -253,124 +174,124 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("BlackBeardBoard"),
-      ),
-      body: Row(children: <Widget>[
-        Expanded(
-            flex: 1,
-            child: ListView.builder(
-              itemCount: blackboardNames.length,
-              padding: EdgeInsets.all(4),
-              itemBuilder: (BuildContext context, int index) {
-                return Container(
-                    height: MediaQuery.of(context).size.width / 8,
-                    child: Tapable(
-                      onTap: () {
-                        setState(() {
-                          currentSelectedBlackboard = index;
-                        });
-                      },
-                      child: Card(
-                        child: Padding(
-                          padding: EdgeInsets.all(16),
-                          child: Center(
-                            child: Text(blackboardNames[index],
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: 25),
-                                textAlign: TextAlign.center),
-                          ),
-                        ),
-                        color: Colors.black,
-                      ),
-                    ));
-              },
-            )),
-        Expanded(
-            flex: 3,
-            child: Container(
-              color: Colors.black,
-              height: MediaQuery.of(context).size.width * 0.375,
-              margin: EdgeInsets.only(right: 8),
-              child: Tapable(
-                onTap: currentSelectedBlackboard != null
-                    ? () {
-                        _displayUpdateBlackboardDialog(context);
-                      }
-                    : null,
-                child: currentSelectedBlackboard == null
-                    ? Container()
-                    : FutureBuilder<Blackboard>(
-                        future: backendConnector.getBoard(
-                            blackboardNames[currentSelectedBlackboard]),
-                        builder: (BuildContext context,
-                            AsyncSnapshot<Blackboard> snapshot) {
-                          if (snapshot.hasError) {
-                            return Text("Someting unexpected happend");
-                          }
-                          if (snapshot.connectionState ==
-                                  ConnectionState.done &&
-                              snapshot.hasData) {
-                            snapshot.data.onTimeout(() {
-                              setState(() {});
-                            });
-                            return Center(
-                                child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                  Text(snapshot.data.name,
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 45),
-                                      textAlign: TextAlign.center),
-                                  SizedBox(height: 50),
-                                  Text(
-                                      "— " +
-                                          snapshot.data.message.content +
-                                          " —",
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 25),
-                                      textAlign: TextAlign.center),
-                                  SizedBox(height: 100),
-                                  if (snapshot.data.isMessageDeprecated())
-                                    Icon(
-                                      Icons.announcement,
-                                      color: Colors.red,
-                                      size: 35,
-                                    ),
-                                  if (snapshot.data.isMessageDeprecated())
-                                    Text('This message is deprecated!',
-                                        style: TextStyle(
-                                            color: Colors.red, fontSize: 11)),
-                                  if (snapshot.data.isMessageDeprecated())
-                                    Text('Click to write an new one!',
-                                        style: TextStyle(
-                                            color: Colors.red, fontSize: 11)),
-                                ]));
-                          } else {
-                            return Center(
-                              child: SizedBox(
-                                width: 75,
-                                height: 75,
-                                child: CircularProgressIndicator(),
-                              ),
-                            );
-                          }
+        appBar: AppBar(
+          title: Text("BlackBeardBoard"),
+        ),
+        body: Row(children: <Widget>[
+          Expanded(
+              flex: 1,
+              child: ListView.builder(
+                itemCount: blackboardNames.length,
+                padding: EdgeInsets.all(4),
+                itemBuilder: (BuildContext context, int index) {
+                  return Container(
+                      height: MediaQuery.of(context).size.width / 8,
+                      child: Tapable(
+                        onTap: () {
+                          setState(() {
+                            currentSelectedBlackboard = index;
+                          });
                         },
-                      ),
-              ),
-            )),
-      ]),
-      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
-      floatingActionButton: MainFloatingActinButton(
-        onAddBlackboardPressed: (){
-          _displayCreateNewBlackboardDialog(context);
-        },
-        onDeleteAllBlackboardsPressed: (){
-          _displayDeleteAllBlackboardsDialog(context);
-        },
-      )
-    );
+                        child: Card(
+                          child: Padding(
+                            padding: EdgeInsets.all(16),
+                            child: Center(
+                              child: Text(blackboardNames[index],
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 25),
+                                  textAlign: TextAlign.center),
+                            ),
+                          ),
+                          color: Colors.black,
+                        ),
+                      ));
+                },
+              )),
+          Expanded(
+              flex: 3,
+              child: Container(
+                color: Colors.black,
+                height: MediaQuery.of(context).size.width * 0.375,
+                margin: EdgeInsets.only(right: 8),
+                child: Tapable(
+                  onTap: currentSelectedBlackboard != null
+                      ? () {
+                          _displayUpdateBlackboardDialog(context);
+                        }
+                      : null,
+                  child: currentSelectedBlackboard == null
+                      ? Container()
+                      : FutureBuilder<Blackboard>(
+                          future: backendConnector
+                              .getBoard(getcurrentBlackboardName()),
+                          builder: (BuildContext context,
+                              AsyncSnapshot<Blackboard> snapshot) {
+                            if (snapshot.hasError) {
+                              return Text("Someting unexpected happend");
+                            }
+                            if (snapshot.connectionState ==
+                                    ConnectionState.done &&
+                                snapshot.hasData) {
+                              snapshot.data.onTimeout(() {
+                                setState(() {});
+                              });
+                              return Center(
+                                  child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                    Text(snapshot.data.name,
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 45),
+                                        textAlign: TextAlign.center),
+                                    SizedBox(height: 50),
+                                    Text(
+                                        "— " +
+                                            snapshot.data.message.content +
+                                            " —",
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 25),
+                                        textAlign: TextAlign.center),
+                                    SizedBox(height: 100),
+                                    if (snapshot.data.isMessageDeprecated())
+                                      Icon(
+                                        Icons.announcement,
+                                        color: Colors.red,
+                                        size: 35,
+                                      ),
+                                    if (snapshot.data.isMessageDeprecated())
+                                      Text('This message is deprecated!',
+                                          style: TextStyle(
+                                              color: Colors.red, fontSize: 11)),
+                                    if (snapshot.data.isMessageDeprecated())
+                                      Text('Click to write an new one!',
+                                          style: TextStyle(
+                                              color: Colors.red, fontSize: 11)),
+                                  ]));
+                            } else {
+                              return Center(
+                                child: SizedBox(
+                                  width: 75,
+                                  height: 75,
+                                  child: CircularProgressIndicator(),
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                ),
+              )),
+        ]),
+        floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
+        floatingActionButton: MainFloatingActinButton(
+          onAddBlackboardPressed: () {
+            _displayCreateNewBlackboardDialog(context);
+          },
+          onDeleteAllBlackboardsPressed: () {
+            _displayDeleteAllBlackboardsDialog(context);
+          },
+        ));
   }
 }
