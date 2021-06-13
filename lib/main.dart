@@ -2,6 +2,7 @@ import 'package:blackbeards_board/backend_connector/abstract_backend_connector.d
 import 'package:blackbeards_board/models/blackboard.dart';
 import 'package:blackbeards_board/models/message.dart';
 import 'package:blackbeards_board/tapable.dart';
+import 'package:blackbeards_board/widgets/main_floating_action_button.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -362,30 +363,14 @@ class _MyHomePageState extends State<MyHomePage> {
             )),
       ]),
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
-      floatingActionButton: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              FloatingActionButton.extended(
-                onPressed: () {
-                  _displayCreateNewBlackboardDialog(context);
-                },
-                label: const Text('New Blackboard'),
-                icon: const Icon(Icons.add),
-                backgroundColor: Colors.blue,
-              ),
-              SizedBox(width: 20),
-              FloatingActionButton.extended(
-                onPressed: () {
-                  _displayDeleteAllBlackboardsDialog(context);
-                },
-                label: const Text('Delete all Blackboards'),
-                icon: const Icon(Icons.delete_forever),
-                backgroundColor: Colors.red,
-              )
-            ],
-          )),
+      floatingActionButton: MainFloatingActinButton(
+        onAddBlackboardPressed: (){
+          _displayCreateNewBlackboardDialog(context);
+        },
+        onDeleteAllBlackboardsPressed: (){
+          _displayDeleteAllBlackboardsDialog(context);
+        },
+      )
     );
   }
 }
