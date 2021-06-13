@@ -107,7 +107,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   TextField(
                     keyboardType: TextInputType.number,
                     onChanged: (value) {
-                      setState(() {});
                     },
                     controller: deprecationTimeController =
                         new TextEditingController(),
@@ -116,7 +115,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   TextField(
                     onChanged: (value) {
-                      setState(() {});
                     },
                     controller: messageController = new TextEditingController(),
                     decoration: InputDecoration(hintText: "Message"),
@@ -158,7 +156,6 @@ class _MyHomePageState extends State<MyHomePage> {
               Text("New Message:"),
               TextField(
                 onChanged: (value) {
-                  setState(() {});
                 },
                 controller: messageController = new TextEditingController(),
                 decoration: InputDecoration(hintText: "Message"),
@@ -168,7 +165,6 @@ class _MyHomePageState extends State<MyHomePage> {
               TextField(
                 keyboardType: TextInputType.number,
                 onChanged: (value) {
-                  setState(() {});
                 },
                 controller: deprecationTimeController =
                     new TextEditingController(),
@@ -205,8 +201,11 @@ class _MyHomePageState extends State<MyHomePage> {
                   "'"),
               style: TextButton.styleFrom(),
               onPressed: () {
-                print("delete all");
-                //TODO: Update Blackboard
+                Blackboard newBlackboard = new Blackboard(blackboardNames[currentSelectedBlackboard],
+                    deprecationTime: int.parse(deprecationTimeController.text),
+                    message: new Message(messageController.text));
+                backendConnector.updateBlackboard(newBlackboard);
+                setState(() {});
                 Navigator.of(context).pop();
               }),
         ],
