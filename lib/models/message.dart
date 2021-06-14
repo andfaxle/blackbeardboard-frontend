@@ -17,8 +17,6 @@ class Message{
 
   static Message fromJson(Map<String,dynamic> json){
 
-    print(json);
-
     String content = json.getOrNull(_KEY_CONTENT);
     int timestamp = json.getOrNull(_KEY_TIMESTAMP);
 

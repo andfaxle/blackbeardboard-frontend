@@ -131,7 +131,7 @@ class BackendConnectorMock implements BackendConnector{
   }
 
   @override
-  Future<bool> checkBlackboardLock(String name) {
+  Future<bool> requestBlackboardLock(String name) {
     // TODO: implement checkBlackboardLock
     throw UnimplementedError();
   }
@@ -143,7 +143,12 @@ class BackendConnectorMock implements BackendConnector{
 
   @override
   void registerBackendLog(Function(String p1) onBackendLogMessage) {
-    // TODO: implement registerBackendLog
+
+  }
+
+  @override
+  Future requestBlackboardUnlock(String name) {
+
   }
 
 

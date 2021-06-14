@@ -27,9 +27,10 @@ class BackendConnectorReal implements BackendConnector{
   static const _ENTRY = "/server";
   static const _KEY_ENDPOINT_BOARD = _ENTRY + "/board";
   static const _KEY_ENDPOINT_BOARDS = _ENTRY + "/boards";
-  static const _KEY_ENDPOINT_LISTEN = _ENTRY + "/listen";
+  static const _KEY_ENDPOINT_LOCKING = _ENTRY + "/locking";
+  static const _KEY_ENDPOINT_LISTEN = "http://"+ url+ _ENTRY + "/listen";
 
-  static const _EVENT_BOARD_CHANGED = "board_changed";
+  static const _EVENT_BOARD_CHANGED = "boards_changed";
   static const _EVENT_BOARD_ADDED = "boards_added";
   static const _EVENT_BOARD_DELETED = "boards_deleted";
 
@@ -40,11 +41,6 @@ class BackendConnectorReal implements BackendConnector{
     'Content-Type': 'application/json; charset=UTF-8',
   };
 
-  static const Map<String,String> _EVENTS_HEADER = <String, String>{
-    'Content-Type': 'application/json; charset=UTF-8',
-    'Cache-Control': 'no-cache',
-  };
-
   BackendConnectorReal(){
     onLog = (data) => print(data);
     onMessage = (data) => print(data);
@@ -53,65 +49,61 @@ class BackendConnectorReal implements BackendConnector{
 
   EventSource eventSource;
 
-  void onBoardAddedEvent(dynamic _data){
+  void onBoardsAddedEvent(dynamic _data){
+
+    sendLogMessage(_KEY_ENDPOINT_LISTEN,"Received on boards added event");
+
+    if(onBoardsAddedCallback == null) return;
+
     String data = _data.data;
     String string_raw = data.substring(1,data.length-1);
-    print(string_raw);
     List<String> nameList= string_raw.split(",");
-    print(nameList);
 
     onBoardsAddedCallback(nameList);
   }
 
-  void onBoardRemovedEvent(dynamic _data){
+  void onBoardsRemovedEvent(dynamic _data){
+
+    sendLogMessage(_KEY_ENDPOINT_LISTEN,"Received on boards removed event");
+
+    if(onBoardsRemovedCallback == null) return;
+
     String data = _data.data;
     String string_raw = data.substring(1,data.length-1);
-    print(string_raw);
     List<String> nameList= string_raw.split(",");
-    print(nameList);
 
     onBoardsRemovedCallback(nameList);
   }
 
+  void onBoardsChangedEvent(dynamic _data){
+
+    sendLogMessage(_KEY_ENDPOINT_LISTEN,"Received on boards updated event");
+
+    if(onBoardChangedCallback == null) return;
+
+    String data = _data.data;
+    Map<String,dynamic> json = jsonDecode(data)[0];
+    Blackboard blackboard = Blackboard.fromJson(json);
+    print(blackboard);
+    print(onBoardChangedCallback);
+
+    if(blackboard.name == this.onBoardChangedName){
+      onBoardChangedCallback(blackboard);
+    }
+  }
+
   void registerToSEE() async{
-
-    String url = "http://localhost:8080/server/listen";
-    EventSource source = EventSource(url,withCredentials: false);
-    source.addEventListener(_EVENT_BOARD_ADDED, onBoardAddedEvent);
-    source.addEventListener(_EVENT_BOARD_DELETED, onBoardRemovedEvent);
+    print(_KEY_ENDPOINT_LISTEN);
+    EventSource source = EventSource(_KEY_ENDPOINT_LISTEN,withCredentials: false);
+    source.addEventListener(_EVENT_BOARD_ADDED, onBoardsAddedEvent);
+    source.addEventListener(_EVENT_BOARD_DELETED, onBoardsRemovedEvent);
+    source.addEventListener(_EVENT_BOARD_CHANGED, onBoardsChangedEvent);
 
   }
-  /*
-  http.Client client = http.Client();
-
-http.Request request = http.Request("GET", Uri.parse('your url'));
-request.headers["Accept"] = "text/event-stream";
-request.headers["Cache-Control"] = "no-cache";
-
-Future<http.StreamedResponse> response = client.send(request);
-print("Subscribed!");
-response.then((streamedResponse) => streamedResponse.stream.listen((value) {
-  final parsedData = utf8.decode(value);
-  print(parsedData);
-
-  //event:heartbeat
-  //data:{"type":"heartbeat"}
-        
-  final eventType = parsedData.split("\n")[0].split(":")[1];
-  print(eventType);
-  //heartbeat
-  final realParsedData = json.decode(parsedData.split("data:")[1]) as Map<String, dynamic>;
-  if (realParsedData != null) {
-  // do something
-  }
-}, onDone: () => print("The streamresponse is ended"),),);
-   */
 
   List<String> boardListToNames(List<dynamic> boards){
     return boards.map((value) => (Blackboard.fromJson(value)).name).toList();
   }
-
-
 
   @override
   Future createBlackboard(Blackboard blackboard) async {
@@ -132,6 +124,8 @@ response.then((streamedResponse) => streamedResponse.stream.listen((value) {
       sendLogMessage(_KEY_ENDPOINT_BOARD, "ERROR: Unable to connect to the server",parameters: params);
       throw FetchDataException("Unable to connect to the server");
     });
+
+
     if(response.statusCode == 201){
       sendLogMessage(_KEY_ENDPOINT_BOARD, "Board created successfully",parameters: params);
       onMessage("Board created successfully");
@@ -152,7 +146,6 @@ response.then((streamedResponse) => streamedResponse.stream.listen((value) {
     };
     Uri uri =  Uri.http(url, _KEY_ENDPOINT_BOARD,params);
     sendLogMessage(_KEY_ENDPOINT_BOARD, "Requesting board from server",parameters: params);
-
     Response response = await http.get(
       uri,
       headers: _STANDARD_HEADER,
@@ -174,7 +167,6 @@ response.then((streamedResponse) => streamedResponse.stream.listen((value) {
         return blackboard;
 
       }catch(error){
-        print(error);
         sendLogMessage(_KEY_ENDPOINT_BOARD, "ERROR: Unable to compute server answer",parameters: params);
         throw FetchDataException("Unable to compute server answer");
       }
@@ -322,26 +314,90 @@ response.then((streamedResponse) => streamedResponse.stream.listen((value) {
     onBoardsRemovedCallback = callback;
   }
 
-  String sendLogMessage(String endpoint,String message,{Map<String,dynamic> parameters}){
+  Future sendLogMessage(String endpoint,String message,{Map<String,dynamic> parameters}) async{
     DateTime dateTime = DateTime.now();
-    final DateFormat formatter = DateFormat("dd.MM.yyyy HH:mm:s");
+    final DateFormat formatter = DateFormat("dd.MM.yyyy HH:mm:ss");
     String dateString = formatter.format(dateTime);
 
     String parametersString = "";
     if(parameters != null){
       for(String key in parameters.keys){
-        parametersString += "$key=${parameters[key]} ";
+        parametersString += "$key=${parameters[key]}\n";
       }
     }
 
-    String logMessage =  dateString + ": @" + endpoint + " - " + parametersString + " "+ message;
+    String logMessage =  dateString + ": @" + endpoint + "\n" + parametersString + message;
     onLog(logMessage);
   }
 
   @override
-  Future<bool> checkBlackboardLock(String name) {
-    // TODO: implement checkBlackboardLock
-    throw UnimplementedError();
+  Future<bool> requestBlackboardLock(String name) async{
+
+    Map<String,String> params = {
+      Blackboard.KEY_NAME: name
+    };
+
+    Uri uri =  Uri.http(url, _KEY_ENDPOINT_LOCKING,params);
+    sendLogMessage(_KEY_ENDPOINT_LOCKING, "Requesting locking for blackboard",parameters: params);
+
+    Response response = await http.get(
+      uri,
+      headers: _STANDARD_HEADER,
+    ).timeout(Duration(seconds: _TIMEOUT),onTimeout: (){
+      sendLogMessage(_KEY_ENDPOINT_LOCKING, "ERROR: The Server timed out",parameters: params);
+      throw FetchDataException("The Server timed out");
+    }).onError((error, stackTrace){
+      sendLogMessage(_KEY_ENDPOINT_LOCKING, "ERROR: Unable to connect to the server",parameters: params);
+      throw FetchDataException("Unable to connect to the server");
+    });
+
+    if(response.statusCode == 200){
+      sendLogMessage(_KEY_ENDPOINT_LOCKING, "Locking permission received",parameters: params);
+      return true;
+    }else if(response.statusCode ==  400){
+      sendLogMessage(_KEY_ENDPOINT_BOARD, "ERROR: No name defined",parameters: params);
+      throw BadRequestException(" No name defined");
+    }else if(response.statusCode == 404){
+      sendLogMessage(_KEY_ENDPOINT_BOARD, "ERROR: No board found",parameters: params);
+      throw NotFoundException("There is now board with this name");
+    }
+    else if(response.statusCode == 403){
+      sendLogMessage(_KEY_ENDPOINT_BOARD, "The board is currently locked by another person",parameters: params);
+    }
+
+    return false;
+  }
+
+  @override
+  Future requestBlackboardUnlock(String name) async{
+
+    Map<String,String> params = {
+      Blackboard.KEY_NAME: name
+    };
+
+    Uri uri =  Uri.http(url, _KEY_ENDPOINT_LOCKING,params);
+    sendLogMessage(_KEY_ENDPOINT_LOCKING, "Requesting to unlock blackboard",parameters: params);
+
+    Response response = await http.post(
+      uri,
+      headers: _STANDARD_HEADER,
+    ).timeout(Duration(seconds: _TIMEOUT),onTimeout: (){
+      sendLogMessage(_KEY_ENDPOINT_LOCKING, "ERROR: The Server timed out",parameters: params);
+      throw FetchDataException("The Server timed out");
+    }).onError((error, stackTrace){
+      sendLogMessage(_KEY_ENDPOINT_LOCKING, "ERROR: Unable to connect to the server",parameters: params);
+      throw FetchDataException("Unable to connect to the server");
+    });
+
+    if(response.statusCode == 200){
+      sendLogMessage(_KEY_ENDPOINT_LOCKING, "Unlocked board",parameters: params);
+    }else if(response.statusCode ==  400){
+      sendLogMessage(_KEY_ENDPOINT_BOARD, "ERROR: No name defined",parameters: params);
+      throw BadRequestException(" No name defined");
+    }else if(response.statusCode == 404){
+      sendLogMessage(_KEY_ENDPOINT_BOARD, "ERROR: No board found",parameters: params);
+      throw NotFoundException("There is now board with this name");
+    }
   }
 
   @override

@@ -28,7 +28,6 @@ class Blackboard{
     // in millisecs
     int timeToTimeout = messageTime - now;
 
-    print("timeToTimeout: $timeToTimeout");
     if(timeToTimeout > 0){
 
       await Future.delayed(Duration(seconds: timeToTimeout));
@@ -46,8 +45,6 @@ class Blackboard{
     int messageTime = message.timestamp + deprecationTime;
     int now = (DateTime.now().millisecondsSinceEpoch / 1000.0).round();
 
-    print("message ts: ${message.timestamp}, deprecation time = $deprecationTime ");
-    print("$messageTime <= $now + ${messageTime <= now}");
     if(messageTime <= now) return true;
 
     return false;

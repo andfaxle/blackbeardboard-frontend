@@ -39,7 +39,9 @@ abstract class BackendConnector{
 
   Future deleteBlackboard(String name);
 
-  Future<bool> checkBlackboardLock(String name);
+  Future<bool> requestBlackboardLock(String name);
+
+  Future requestBlackboardUnlock(String name);
 
   Future deleteAllBlackboards();
 
