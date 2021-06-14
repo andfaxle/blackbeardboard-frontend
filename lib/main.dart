@@ -74,6 +74,7 @@ class _MyHomePageState extends State<MyHomePage> {
       for (String name in names) {
         blackboardNames.remove(name);
       }
+      print("names: " + blackboardNames.toString());
     });
   }
 
@@ -301,19 +302,21 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: currentSelectedBlackboard == null
                     ? Container()
                     : FutureBuilder<Blackboard>(
-                        future: backendConnector.getBoard(
-                            blackboardNames[currentSelectedBlackboard]),
+                        future: backendConnector.getBoard(blackboardNames[currentSelectedBlackboard]),
                         builder: (BuildContext context,
                             AsyncSnapshot<Blackboard> snapshot) {
                           if (snapshot.hasError) {
                             return Text("Someting unexpected happend");
                           }
+                          print(snapshot.data);
+
                           if (snapshot.connectionState ==
                                   ConnectionState.done &&
                               snapshot.hasData) {
                             snapshot.data.onTimeout(() {
                               setState(() {});
                             });
+                            print(snapshot.data);
                             return Center(
                                 child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
@@ -327,7 +330,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   SizedBox(height: 50),
                                   Text(
                                       "— " +
-                                          snapshot.data.message.content +
+                                          (snapshot.data.message.content ?? "")+
                                           " —",
                                       style: TextStyle(
                                           color: Colors.white, fontSize: 25),

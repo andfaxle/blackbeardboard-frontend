@@ -20,29 +20,43 @@ class Blackboard{
 
   void onTimeout(Function callback) async{
 
-    int messageTime = message.timestamp + deprecationTime * 1000;
-    int now = DateTime.now().millisecondsSinceEpoch;
+    if (message.content == null) return;
+
+    int messageTime = message.timestamp + deprecationTime;
+    int now = (DateTime.now().millisecondsSinceEpoch / 1000.0).round();
 
     // in millisecs
     int timeToTimeout = messageTime - now;
+
+    print("timeToTimeout: $timeToTimeout");
     if(timeToTimeout > 0){
-      await Future.delayed(Duration(milliseconds: timeToTimeout));
+
+      await Future.delayed(Duration(seconds: timeToTimeout));
       callback();
     }
 
   }
 
   bool isMessageDeprecated(){
-    if(message != null){
-      int messageTime = message.timestamp + deprecationTime * 1000;
-      int now = DateTime.now().millisecondsSinceEpoch;
-      if(messageTime <= now) return true;
-    }
+
+    if (message == null) return false;
+    if (message.timestamp == null) return false;
+    if (message.content == null) return false;
+
+    int messageTime = message.timestamp + deprecationTime;
+    int now = (DateTime.now().millisecondsSinceEpoch / 1000.0).round();
+
+    print("message ts: ${message.timestamp}, deprecation time = $deprecationTime ");
+    print("$messageTime <= $now + ${messageTime <= now}");
+    if(messageTime <= now) return true;
+
     return false;
+
   }
 
   static const KEY_NAME = "name";
   static const KEY_DEPRECATION_TIME = "deprecationTime";
+  static const KEY_MESSAGE_TIMESTAMP = "timestamp";
   static const KEY_MESSAGE = "message";
 
   static Blackboard fromJson(Map<String,dynamic> json){
@@ -63,18 +77,6 @@ class Blackboard{
       KEY_DEPRECATION_TIME: deprecationTime,
       KEY_MESSAGE: messageDoc,
     };
-  }
-
-  Map<String,dynamic> toParams(){
-
-    Map<String,String> params = {};
-
-    if(this.name!= null) params[KEY_NAME] = this.name;
-    if(this.deprecationTime!= null) params[KEY_DEPRECATION_TIME] = this.deprecationTime.toString();
-    if(this.message != null) params[KEY_MESSAGE] = this.message.content;
-
-    return params;
-
   }
 
   @override

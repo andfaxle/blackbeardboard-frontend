@@ -3,7 +3,7 @@ class Message{
 
   Message(String content,{int timestamp}){
     this.content = content;
-    this.timestamp = timestamp ?? DateTime.now().millisecondsSinceEpoch;
+    this.timestamp = timestamp;
   }
 
   // The content of the message
@@ -16,8 +16,11 @@ class Message{
   static const _KEY_TIMESTAMP = "timestamp";
 
   static Message fromJson(Map<String,dynamic> json){
+
+    print(json);
+
     String content = json.getOrNull(_KEY_CONTENT);
-    int timestamp = json.getOrNull(_KEY_CONTENT);
+    int timestamp = json.getOrNull(_KEY_TIMESTAMP);
 
     return Message(content, timestamp: timestamp);
   }

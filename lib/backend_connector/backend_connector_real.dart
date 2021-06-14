@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:html';
 
 import 'package:blackbeards_board/error_handling/app_exeption.dart';
 import 'package:blackbeards_board/models/blackboard.dart';
@@ -50,39 +51,61 @@ class BackendConnectorReal implements BackendConnector{
     registerToSEE();
   }
 
+  EventSource eventSource;
+
+  void onBoardAddedEvent(dynamic _data){
+    String data = _data.data;
+    String string_raw = data.substring(1,data.length-1);
+    print(string_raw);
+    List<String> nameList= string_raw.split(",");
+    print(nameList);
+
+    onBoardsAddedCallback(nameList);
+  }
+
+  void onBoardRemovedEvent(dynamic _data){
+    String data = _data.data;
+    String string_raw = data.substring(1,data.length-1);
+    print(string_raw);
+    List<String> nameList= string_raw.split(",");
+    print(nameList);
+
+    onBoardsRemovedCallback(nameList);
+  }
+
   void registerToSEE() async{
 
-    http.Client client = http.Client();
+    String url = "http://localhost:8080/server/listen";
+    EventSource source = EventSource(url,withCredentials: false);
+    source.addEventListener(_EVENT_BOARD_ADDED, onBoardAddedEvent);
+    source.addEventListener(_EVENT_BOARD_DELETED, onBoardRemovedEvent);
 
-    Uri uri =  Uri.http(url, _KEY_ENDPOINT_LISTEN);
-
-    Request request = http.Request("GET",uri);
-    request.headers["Cache-Control"] = "no-cache";
-    request.headers["Accept"] = "text/event-stream";
-
-    Future<http.StreamedResponse> response = client.send(request);
-    sendLogMessage(_KEY_ENDPOINT_LISTEN, "Registering for SSE ...");
-    response.then((streamedResponse) => streamedResponse.stream.listen((value)
-    {
-      print("message: $value");
-      String parsedData = utf8.decode(value);
-      List<String> lines = parsedData.split("\n");
-
-      String event = lines[0].replaceAll("event: ", "");
-      List<dynamic> data = json.decode(lines[2].replaceAll("data: ", ""));
-
-      print("event: '$event'");
-      if(event == _EVENT_BOARD_CHANGED){
-
-      }else if(event == _EVENT_BOARD_ADDED){
-        List<String> names = boardListToNames(data);
-        if(onBoardsAddedCallback != null) onBoardsAddedCallback(names);
-      }else if(event == _EVENT_BOARD_DELETED){
-        List<String> names = boardListToNames(data);
-        if(onBoardsRemovedCallback != null) onBoardsRemovedCallback(names);
-      }
-    }));
   }
+  /*
+  http.Client client = http.Client();
+
+http.Request request = http.Request("GET", Uri.parse('your url'));
+request.headers["Accept"] = "text/event-stream";
+request.headers["Cache-Control"] = "no-cache";
+
+Future<http.StreamedResponse> response = client.send(request);
+print("Subscribed!");
+response.then((streamedResponse) => streamedResponse.stream.listen((value) {
+  final parsedData = utf8.decode(value);
+  print(parsedData);
+
+  //event:heartbeat
+  //data:{"type":"heartbeat"}
+        
+  final eventType = parsedData.split("\n")[0].split(":")[1];
+  print(eventType);
+  //heartbeat
+  final realParsedData = json.decode(parsedData.split("data:")[1]) as Map<String, dynamic>;
+  if (realParsedData != null) {
+  // do something
+  }
+}, onDone: () => print("The streamresponse is ended"),),);
+   */
 
   List<String> boardListToNames(List<dynamic> boards){
     return boards.map((value) => (Blackboard.fromJson(value)).name).toList();
@@ -92,28 +115,31 @@ class BackendConnectorReal implements BackendConnector{
 
   @override
   Future createBlackboard(Blackboard blackboard) async {
-    Map<String,dynamic> parameters = blackboard.toParams();
-    Uri uri =  Uri.http(url,  _KEY_ENDPOINT_BOARD,parameters);
-    sendLogMessage(_KEY_ENDPOINT_BOARD, "Sending create request to server",parameters: parameters);
+    Map<String,String> params = {};
+    params[Blackboard.KEY_NAME] = blackboard.name;
+    params[Blackboard.KEY_DEPRECATION_TIME] = blackboard.deprecationTime.toString();
+
+    Uri uri =  Uri.http(url,  _KEY_ENDPOINT_BOARD,params);
+    sendLogMessage(_KEY_ENDPOINT_BOARD, "Sending create request to server",parameters: params);
 
     Response response = await http.post(
       uri,
       headers: _STANDARD_HEADER,
     ).timeout(Duration(seconds: _TIMEOUT),onTimeout: (){
-      sendLogMessage(_KEY_ENDPOINT_BOARD, "ERROR: The Server timed out",parameters: parameters);
+      sendLogMessage(_KEY_ENDPOINT_BOARD, "ERROR: The Server timed out",parameters: params);
       throw FetchDataException("The Server timed out");
     }).onError((error, stackTrace){
-      sendLogMessage(_KEY_ENDPOINT_BOARD, "ERROR: Unable to connect to the server",parameters: parameters);
+      sendLogMessage(_KEY_ENDPOINT_BOARD, "ERROR: Unable to connect to the server",parameters: params);
       throw FetchDataException("Unable to connect to the server");
     });
     if(response.statusCode == 201){
-      sendLogMessage(_KEY_ENDPOINT_BOARD, "Board created successfully",parameters: parameters);
+      sendLogMessage(_KEY_ENDPOINT_BOARD, "Board created successfully",parameters: params);
       onMessage("Board created successfully");
     }else if(response.statusCode == 400){
-      sendLogMessage(_KEY_ENDPOINT_BOARD, "ERROR: Missing parameters, name or deprecation time",parameters: parameters);
+      sendLogMessage(_KEY_ENDPOINT_BOARD, "ERROR: Missing parameters, name or deprecation time",parameters: params);
       throw BadRequestException("Please define name and deprecation time");
     }else if(response.statusCode == 409){
-      sendLogMessage(_KEY_ENDPOINT_BOARD, "ERROR: There is already a board with this name",parameters: parameters);
+      sendLogMessage(_KEY_ENDPOINT_BOARD, "ERROR: There is already a board with this name",parameters: params);
       throw BadRequestException("There is already a board with this name");
     }
 
@@ -139,14 +165,16 @@ class BackendConnectorReal implements BackendConnector{
     });
 
     if(response.statusCode == 200){
-      String body = response.body;
+
       try{
+        String body = response.body;
         Map<String,dynamic> jsonBody = jsonDecode(body);
         Blackboard blackboard = Blackboard.fromJson(jsonBody);
         sendLogMessage(_KEY_ENDPOINT_BOARD, "Board retrieved from the server",parameters: params);
         return blackboard;
 
       }catch(error){
+        print(error);
         sendLogMessage(_KEY_ENDPOINT_BOARD, "ERROR: Unable to compute server answer",parameters: params);
         throw FetchDataException("Unable to compute server answer");
       }
@@ -195,8 +223,11 @@ class BackendConnectorReal implements BackendConnector{
   @override
   Future updateBlackboard(Blackboard blackboard) async {
 
-    Map<String,dynamic> params = blackboard.toParams();
-    Uri uri =  Uri.http(url, _KEY_ENDPOINT_BOARD,);
+    Map<String,dynamic> params = {};
+    params[Blackboard.KEY_MESSAGE] = blackboard.message.content;
+    params[Blackboard.KEY_NAME] = blackboard.name;
+
+    Uri uri =  Uri.http(url, _KEY_ENDPOINT_BOARD,params);
     sendLogMessage(_KEY_ENDPOINT_BOARD, "Sending update request to the server",parameters: params);
 
     Response response = await http.put(
