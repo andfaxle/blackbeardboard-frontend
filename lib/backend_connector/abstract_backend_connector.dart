@@ -9,20 +9,10 @@ enum BackendType {
   REAL
 }
 
-class BackendConnectorService{
-  static void init(BackendType type,{Function(String) onMessage,Function(String) onLog}){
-    _instance = BackendConnector(type,onMessage: onMessage,onLog: onLog);
-  }
-
-  static BackendConnector _instance;
-
-  static BackendConnector get instance => _instance;
-}
-
 // Provides an abstract interface to the backend server
 abstract class BackendConnector{
 
-  factory BackendConnector(BackendType type,{Function(String) onMessage,Function(String) onLog}){
+  factory BackendConnector(BackendType type){
     switch(type){
       case BackendType.MOCK: return BackendConnectorMock();
       case BackendType.REAL: return BackendConnectorReal();

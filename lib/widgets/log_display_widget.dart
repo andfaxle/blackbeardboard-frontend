@@ -1,6 +1,7 @@
 
 
 import 'package:blackbeards_board/backend_connector/abstract_backend_connector.dart';
+import 'package:blackbeards_board/backend_connector/backend_connector_service.dart';
 import 'package:flutter/cupertino.dart';
 
 // This widget can be used to display a list of log infos

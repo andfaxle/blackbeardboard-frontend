@@ -3,8 +3,9 @@
 import 'dart:async';
 
 import 'package:blackbeards_board/backend_connector/abstract_backend_connector.dart';
+import 'package:blackbeards_board/backend_connector/backend_connector_service.dart';
 import 'package:blackbeards_board/models/blackboard.dart';
-import 'package:blackbeards_board/tapable.dart';
+import 'tapable.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 

@@ -3,6 +3,14 @@ import 'package:blackbeards_board/error_handling/app_exeption.dart';
 import 'package:blackbeards_board/models/blackboard.dart';
 import 'abstract_backend_connector.dart';
 
+
+// A Mockup for the BackendConnector used to already start developing the
+// Frontend without an finished and deployed backend
+
+// Not all functionalities are implemented, as development stopped when backend
+// became available
+// Could be repurposed for UI Testing without real backend in the future
+
 class BackendConnectorMock implements BackendConnector{
 
   Function(String) onMessage;

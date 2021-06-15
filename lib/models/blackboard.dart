@@ -66,7 +66,6 @@ class Blackboard{
     // if the time the message will be marked as deprecated is after to current time
     // mark the message as deprecated
     if(messageDeprecationTime <= now) return true;
-
     return false;
 
   }

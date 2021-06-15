@@ -4,12 +4,13 @@ import 'package:blackbeards_board/backend_connector/abstract_backend_connector.d
 import 'package:blackbeards_board/models/blackboard.dart';
 import 'package:blackbeards_board/models/message.dart';
 
+
+// used to test the backend during development
+// written only in dart, so testing doesnt need flutter
 void main() async{
 
 
-  BackendConnector backendConnector = BackendConnector(BackendType.REAL,onMessage: (String message){
-    print('Log: "$message"');
-  });
+  BackendConnector backendConnector = BackendConnector(BackendType.REAL);
 
   await Future.delayed(Duration(milliseconds: 500));
 
