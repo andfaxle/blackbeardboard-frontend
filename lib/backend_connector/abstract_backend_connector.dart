@@ -19,6 +19,7 @@ class BackendConnectorService{
   static BackendConnector get instance => _instance;
 }
 
+// Provides an abstract interface to the backend server
 abstract class BackendConnector{
 
   factory BackendConnector(BackendType type,{Function(String) onMessage,Function(String) onLog}){

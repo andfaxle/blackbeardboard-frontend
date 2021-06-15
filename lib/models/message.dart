@@ -1,4 +1,8 @@
 import 'package:blackbeards_board/extensions.dart';
+
+// Model of the Message object
+// Each Message is child of one Blackboard
+// No logic is implemented here, only transformation from and to json
 class Message{
 
   Message(String content,{int timestamp}){

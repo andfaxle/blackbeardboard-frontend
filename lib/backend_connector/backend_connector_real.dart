@@ -8,22 +8,50 @@ import 'package:intl/intl.dart';
 import 'abstract_backend_connector.dart';
 import 'package:http/http.dart' as http;
 
+// *** START BACKEND *** :
 // asadmin start-domain
 // asadmin list-applications
-// asadmin undeploy blackbeardboard-backend-1.0-SNAPSHOT
-//
+// asadmin undeploy server
+// asadmin deploy server
 
+
+// *** DEPLOY ON AWS ***:
+
+// ssh connection:
+// ssh -i "aws_ec2_key.pem" ec2-user@ec2-3-120-228-180.eu-central-1.compute.amazonaws.com
+// scp upload:
+// scp -i "aws_ec2_key.pem" C:\Informatik\workspaces\flutter_workspace\blackbeardboard_frontend\build\web.zip ec2-user@ec2-3-120-228-180.eu-central-1.compute.amazonaws.com:~
+// start frontend server:
+// nohup python3 -m http.server & (in "web" directory)
+
+// backend available on 3.120.228.180:8080
+// frontend available on 3.120.228.180:8000
+
+
+// Implementation of an abstract server interface, connects to standard server
 class BackendConnectorReal implements BackendConnector{
 
+  // callback functions to receive server log and info messages
   Function(String) onMessage;
   Function(String) onLog;
 
+  // the name of the board for which to listen to updates
   String onBoardChangedName;
+
+  // callbacks functions to receive information when a board has changed or
+  // a boards have been added or removed
   Function(Blackboard blackboard) onBoardChangedCallback;
   Function(List<String> name) onBoardsAddedCallback;
   Function(List<String> name) onBoardsRemovedCallback;
 
-  static const String url = "localhost:8080";// "10.0.2.2:8080";//
+  // The port the backend server runs on
+  static const String port = "8080";
+
+  // The IP the backend server runs on
+  // change IP to 127.0.0.1 to connect to server running on local host
+  static const String url = "3.120.228.180" + ":" + port;
+
+  // Entry points of different server functionalities, see documentation
   static const _ENTRY = "/server";
   static const _KEY_ENDPOINT_BOARD = _ENTRY + "/board";
   static const _KEY_ENDPOINT_BOARDS = _ENTRY + "/boards";
@@ -34,64 +62,81 @@ class BackendConnectorReal implements BackendConnector{
   static const _EVENT_BOARD_ADDED = "boards_added";
   static const _EVENT_BOARD_DELETED = "boards_deleted";
 
-  // in seconds
+  // Max time to wait for a server answer in seconds
   static const _TIMEOUT = 10;
 
+  // header for http requests
+  // only allow json
   static const Map<String,String> _STANDARD_HEADER = <String, String>{
     'Content-Type': 'application/json; charset=UTF-8',
   };
 
   BackendConnectorReal(){
+
+    // initialize onLog and onMessage
+    // if nobody registers on those callbacks, the Information will be printed
+    // to the console
     onLog = (data) => print(data);
     onMessage = (data) => print(data);
+
+    // register to server sided events
     registerToSEE();
   }
 
-  EventSource eventSource;
-
+  // called if a add event is received by SEE
   void onBoardsAddedEvent(dynamic _data){
 
     sendLogMessage(_KEY_ENDPOINT_LISTEN,"Received on boards added event");
 
+    // no need to compute is there is no callback registered anyway
     if(onBoardsAddedCallback == null) return;
 
+    // Extract list of boards from the data
     String data = _data.data;
     String string_raw = data.substring(1,data.length-1);
     List<String> nameList= string_raw.split(",");
 
+    // call callback
     onBoardsAddedCallback(nameList);
   }
 
+  // called if a remove event is received by SEE
   void onBoardsRemovedEvent(dynamic _data){
 
     sendLogMessage(_KEY_ENDPOINT_LISTEN,"Received on boards removed event");
 
+    // no need to compute is there is no callback registered anyway
     if(onBoardsRemovedCallback == null) return;
 
+    // Extract list of boards from the data
     String data = _data.data;
     String string_raw = data.substring(1,data.length-1);
     List<String> nameList= string_raw.split(",");
 
+    // call callback
     onBoardsRemovedCallback(nameList);
   }
 
+  // called if an update event is received by SEE
   void onBoardsChangedEvent(dynamic _data){
 
     sendLogMessage(_KEY_ENDPOINT_LISTEN,"Received on boards updated event");
 
+    // no need to compute is there is no callback registered anyway
     if(onBoardChangedCallback == null) return;
 
+    // transfer string data to an instance of Blackboard
     String data = _data.data;
     Map<String,dynamic> json = jsonDecode(data)[0];
     Blackboard blackboard = Blackboard.fromJson(json);
-    print(blackboard);
-    print(onBoardChangedCallback);
 
+    // only call callback if name of the board is the board that the frontend has registered for
     if(blackboard.name == this.onBoardChangedName){
       onBoardChangedCallback(blackboard);
     }
   }
 
+  // start listening to Server Sent Events, register computing functions
   void registerToSEE() async{
     print(_KEY_ENDPOINT_LISTEN);
     EventSource source = EventSource(_KEY_ENDPOINT_LISTEN,withCredentials: false);
@@ -101,10 +146,8 @@ class BackendConnectorReal implements BackendConnector{
 
   }
 
-  List<String> boardListToNames(List<dynamic> boards){
-    return boards.map((value) => (Blackboard.fromJson(value)).name).toList();
-  }
-
+  // Sends an create blackboard request to the server
+  // For status code info, see https://developer.mozilla.org/de/docs/Web/HTTP/Status
   @override
   Future createBlackboard(Blackboard blackboard) async {
     Map<String,String> params = {};
@@ -139,6 +182,8 @@ class BackendConnectorReal implements BackendConnector{
 
   }
 
+  // Gets data on an specific board from the server
+  // For status code info, see https://developer.mozilla.org/de/docs/Web/HTTP/Status
   @override
   Future<Blackboard> getBoard(String name) async{
     Map<String,String> params = {
@@ -160,7 +205,7 @@ class BackendConnectorReal implements BackendConnector{
     if(response.statusCode == 200){
 
       try{
-        String body = response.body;
+        String body = utf8.decode(response.bodyBytes);
         Map<String,dynamic> jsonBody = jsonDecode(body);
         Blackboard blackboard = Blackboard.fromJson(jsonBody);
         sendLogMessage(_KEY_ENDPOINT_BOARD, "Board retrieved from the server",parameters: params);
@@ -178,6 +223,8 @@ class BackendConnectorReal implements BackendConnector{
 
 
 
+  // Gets a list of all blackboards, that are currently there
+  // For status code info, see https://developer.mozilla.org/de/docs/Web/HTTP/Status
   @override
   Future<List<String>> getAllBlackboardNames() async{
 
@@ -197,8 +244,7 @@ class BackendConnectorReal implements BackendConnector{
     });
 
     if(response.statusCode == 200){
-      String body = response.body;
-
+      String body = utf8.decode(response.bodyBytes);
       try{
         List<dynamic> jsonBody = jsonDecode(body);
         List<String> boardNames =  jsonBody.map((value) => value as String).toList();
@@ -212,6 +258,9 @@ class BackendConnectorReal implements BackendConnector{
     }
   }
 
+  // Allows to update the message of a blackboard
+  // The message creation timestamp is set by the server
+  // For status code info, see https://developer.mozilla.org/de/docs/Web/HTTP/Status
   @override
   Future updateBlackboard(Blackboard blackboard) async {
 
@@ -245,6 +294,7 @@ class BackendConnectorReal implements BackendConnector{
 
   }
 
+  // Deletes a blackboard with the given name
   @override
   Future deleteBlackboard(String name) async {
     Map<String,String> params = {
@@ -273,6 +323,8 @@ class BackendConnectorReal implements BackendConnector{
     }
   }
 
+  // Deletes all blackboards
+  // USE WITH CAUTION!
   @override
   Future deleteAllBlackboards()async {
 
@@ -298,27 +350,32 @@ class BackendConnectorReal implements BackendConnector{
 
   }
 
+  // frontend can listen for changes of a given blackboard identified by the name
   @override
   void registerOnBoardChange(String name,Function(Blackboard blackboard) callback){
     onBoardChangedName = name;
     onBoardChangedCallback = callback;
   }
 
+  // frontend can listen for new blackboards added
   @override
   void registerOnBoardsAdded(Function(List<String> name) callback){
     onBoardsAddedCallback = callback;
   }
 
+  // frontend can listen for blackboards removed
   @override
   void registerOnBoardsRemoved(Function(List<String> name) callback){
     onBoardsRemovedCallback = callback;
   }
 
+  // formats and sends a log message
   Future sendLogMessage(String endpoint,String message,{Map<String,dynamic> parameters}) async{
     DateTime dateTime = DateTime.now();
     final DateFormat formatter = DateFormat("dd.MM.yyyy HH:mm:ss");
     String dateString = formatter.format(dateTime);
 
+    // if there are parameters, add them to the log message
     String parametersString = "";
     if(parameters != null){
       for(String key in parameters.keys){
@@ -330,6 +387,8 @@ class BackendConnectorReal implements BackendConnector{
     onLog(logMessage);
   }
 
+  // locks the blackboard, so no other user can update it while you are updating it
+  // REMEMBER TO CALL UNLOCK BLACKBOARD after finishing!
   @override
   Future<bool> requestBlackboardLock(String name) async{
 
@@ -368,6 +427,7 @@ class BackendConnectorReal implements BackendConnector{
     return false;
   }
 
+  // unlocks a blackboard for others
   @override
   Future requestBlackboardUnlock(String name) async{
 
@@ -400,11 +460,13 @@ class BackendConnectorReal implements BackendConnector{
     }
   }
 
+  // frontend can register here to display info messages
   @override
   void registerBackendInfo(Function(String p1) onBackendInfoMessage) {
     this.onMessage = onBackendInfoMessage;
   }
 
+  // frontend can register here to display log messages
   @override
   void registerBackendLog(Function(String p1) onBackendLogMessage) {
     this.onLog = onBackendLogMessage;

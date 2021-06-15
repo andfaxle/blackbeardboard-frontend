@@ -45,15 +45,29 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     backendConnector = BackendConnectorService.instance;
-    // TODO:backendConnector.registerOnBoardChange("name", onBoardChanged);
+
+    // Gets all boards that are available
+    // First all current boards will be get as a List from the server
+    // After that, only updates to that list are transmitted
+    // via registerOnBoardsAdded and onBoardsRemoved
     backendConnector.getAllBlackboardNames().then((List<String> names) {
       setState(() {
         blackboardNames = names;
       });
     });
 
+    // registration on add or remove boards
     backendConnector.registerOnBoardsAdded(onBoardsAdded);
     backendConnector.registerOnBoardsRemoved(onBoardsRemoved);
+
+    // Register listener to the Infos provided by the backendconnector
+    backendConnector.registerBackendInfo(onBackendInfo);
+  }
+
+  void onBackendInfo(String content){
+    // Display server messages as snackbar
+    // see https://material.io/components/snackbars
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(content)));
   }
 
   // BB was added to the server --> Notification and name of the BB is added to the internal list
@@ -61,11 +75,6 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       blackboardNames.addAll(names);
     });
-  }
-
-  void onBackendMessage(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(new SnackBar(content: Text(message)));
   }
 
   // BB was deleted from the server --> Notification and name of the BB is removed from the internal list
@@ -92,20 +101,27 @@ class _MyHomePageState extends State<MyHomePage> {
   The BB has to be given a name, the deprecation time and a message.
  */
   Future<void> _displayCreateNewBlackboardDialog(BuildContext context) async {
+
     TextEditingController blackboardNameController =
         new TextEditingController();
     TextEditingController deprecationTimeController =
         new TextEditingController();
-    TextEditingController messageController = new TextEditingController();
+
+    final _formKey = GlobalKey<FormState>();
+
     showDialog(
       context: context,
       builder: (_) => new MainCreateNewBlackboardDialog(
+        formKey: _formKey,
         blackboardNameController: blackboardNameController,
         deprecationTimeController: deprecationTimeController,
         onCancelPressed: () {
           Navigator.of(context).pop(); //exit dialog
         },
         onCreatePressed: () {
+
+          if(!_formKey.currentState.validate()) return;
+
           backendConnector.createBlackboard(new Blackboard(
               blackboardNameController.text,
               deprecationTime: int.parse(deprecationTimeController.text),
@@ -126,7 +142,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if(editingAllowed){
       TextEditingController messageController = new TextEditingController();
-      showDialog(
+      await showDialog(
           context: context,
           builder: (_) => new MainUpdateBlackboardDialog(
             blackboardName: name,
@@ -135,12 +151,10 @@ class _MyHomePageState extends State<MyHomePage> {
               backendConnector.deleteBlackboard(name);
               currentSelectedBlackboardName = null;
               setState(() {});
-              backendConnector.requestBlackboardUnlock(name);//
               Navigator.of(context).pop(); //exit dialog
             },
             onCancelPressed: () {
               Navigator.of(context).pop();
-              backendConnector.requestBlackboardUnlock(name);//exit dialog
             },
             onUpdatePressed: () {
               Blackboard newBlackboard = new Blackboard(
@@ -148,10 +162,12 @@ class _MyHomePageState extends State<MyHomePage> {
                   message: new Message(messageController.text));
               backendConnector.updateBlackboard(newBlackboard);
               setState(() {});
-              backendConnector.requestBlackboardUnlock(name);//
               Navigator.of(context).pop(); //exit dialog
             },
           ));
+
+      backendConnector.requestBlackboardUnlock(name);//exit dialog
+
     }else{
       showDialog(
           context: context,
@@ -173,7 +189,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   // Displays the Delete all Blackboards Dialog --> .\widgets\main_delete_all_blackboards_dialog.dart
-
   Future<void> _displayDeleteAllBlackboardsDialog(BuildContext context) async {
     showDialog(
       context: context,
@@ -258,7 +273,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ]),
         floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
-        floatingActionButton: MainFloatingActinButton(
+        floatingActionButton: MainFloatingActionButton(
           onAddBlackboardPressed: () {
             _displayCreateNewBlackboardDialog(context);
           },

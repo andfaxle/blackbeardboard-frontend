@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// no functionality implemented here, on layouting
 class MainUpdateBlackboardDialog extends StatelessWidget {
 
   final Function onDeletePressed;
@@ -22,9 +23,6 @@ class MainUpdateBlackboardDialog extends StatelessWidget {
           children: <Widget>[
             Text("New Message:"),
             TextField(
-
-              onChanged: (value) {
-              },
               controller: messageController,
               decoration: InputDecoration(hintText: "Message"),
             ),

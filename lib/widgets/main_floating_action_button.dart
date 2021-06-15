@@ -2,12 +2,13 @@
 
 import 'package:flutter/material.dart';
 
-class MainFloatingActinButton extends StatelessWidget {
+// Two buttons to add and remove blackboards, implements no logic
+class MainFloatingActionButton extends StatelessWidget {
 
   final Function onAddBlackboardPressed;
   final Function onDeleteAllBlackboardsPressed;
 
-  const MainFloatingActinButton({Key key, this.onAddBlackboardPressed, this.onDeleteAllBlackboardsPressed}) : super(key: key);
+  const MainFloatingActionButton({Key key, this.onAddBlackboardPressed, this.onDeleteAllBlackboardsPressed}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

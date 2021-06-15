@@ -1,6 +1,9 @@
 
 import 'package:flutter/material.dart';
 
+
+// enables to listen for user interaction on the underlying widget while also
+// providing nice animations for onTap and onLongTap Tappable
 class Tapable extends StatelessWidget{
 
   final GestureTapCallback onTap;

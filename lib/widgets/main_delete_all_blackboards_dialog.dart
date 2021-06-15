@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 
+// Asks the user if he really wants to delete all blackboards
 class MainDeleteAllBlackboardsDialog extends StatelessWidget {
 
   final Function onCancelPressed;
