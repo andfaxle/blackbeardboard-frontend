@@ -7,7 +7,7 @@ import 'backend_connector/backend_connector_service.dart';
 void main() {
 
   //initialize Backend
-  BackendConnectorService.init(BackendType.REAL);
+  BackendConnectorService.init(BackendType.MOCK);
 
   //Start UI
   runApp(App());

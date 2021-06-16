@@ -60,10 +60,11 @@ class _MyHomePageState extends State<MyHomePage> {
     backendConnector.registerBackendInfo(onBackendInfo);
   }
 
-  void onBackendInfo(String content){
+  void onBackendInfo(String content) {
     // Display server messages as snackbar
     // see https://material.io/components/snackbars
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(content)));
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(content)));
   }
 
   // BB was added to the server --> Notification and name of the BB is added to the internal list
@@ -76,9 +77,8 @@ class _MyHomePageState extends State<MyHomePage> {
   // BB was deleted from the server --> Notification and name of the BB is removed from the internal list
   void onBoardsRemoved(List<String> names) {
     setState(() {
-
       for (String name in names) {
-        if(name == currentSelectedBlackboardName){
+        if (name == currentSelectedBlackboardName) {
           currentSelectedBlackboardName = null;
         }
         blackboardNames.remove(name);
@@ -92,12 +92,36 @@ class _MyHomePageState extends State<MyHomePage> {
   // index of the currently selected BB
   String currentSelectedBlackboardName;
 
+  TextEditingController searchController = new TextEditingController();
+
+
+  void filterBlackboards(String filter){
+    List<String> dummySearchList = blackboardNames;
+
+    if(filter.isNotEmpty) {
+      List<String> dummyListData = [];
+      dummySearchList.forEach((item) {
+        if(item.contains(filter)) {
+          dummyListData.add(item);
+        }
+      });
+      setState(() {
+        blackboardNames.clear();
+        blackboardNames.addAll(dummyListData);
+      });
+      return;
+    } else {
+      blackboardNames.clear();
+      blackboardNames = dummySearchList;
+      }
+    }
+
+
 
 /* Displays the Create New Blackboard Dialog --> .\widgets\main_create_new_blackboard_dialog.dart
   The BB has to be given a name, the deprecation time and a message.
  */
   Future<void> _displayCreateNewBlackboardDialog(BuildContext context) async {
-
     TextEditingController blackboardNameController =
     new TextEditingController();
     TextEditingController deprecationTimeController =
@@ -107,7 +131,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
     showDialog(
       context: context,
-      builder: (_) => new MainCreateNewBlackboardDialog(
+      builder: (_) =>
+      new MainCreateNewBlackboardDialog(
         formKey: _formKey,
         blackboardNameController: blackboardNameController,
         deprecationTimeController: deprecationTimeController,
@@ -115,8 +140,7 @@ class _MyHomePageState extends State<MyHomePage> {
           Navigator.of(context).pop(); //exit dialog
         },
         onCreatePressed: () {
-
-          if(!_formKey.currentState.validate()) return;
+          if (!_formKey.currentState.validate()) return;
 
           backendConnector.createBlackboard(new Blackboard(
             blackboardNameController.text,
@@ -132,15 +156,15 @@ class _MyHomePageState extends State<MyHomePage> {
   The BB has to be given a new deprecation time and a new message.
  */
   Future<void> _displayUpdateBlackboardDialog(BuildContext context) async {
-
     String name = currentSelectedBlackboardName;
     bool editingAllowed = await backendConnector.requestBlackboardLock(name);
 
-    if(editingAllowed){
+    if (editingAllowed) {
       TextEditingController messageController = new TextEditingController();
       await showDialog(
           context: context,
-          builder: (_) => new MainUpdateBlackboardDialog(
+          builder: (_) =>
+          new MainUpdateBlackboardDialog(
             blackboardName: name,
             messageController: messageController,
             onDeletePressed: () {
@@ -162,33 +186,34 @@ class _MyHomePageState extends State<MyHomePage> {
             },
           ));
 
-      backendConnector.requestBlackboardUnlock(name);//exit dialog
+      backendConnector.requestBlackboardUnlock(name); //exit dialog
 
-    }else{
+    } else {
       showDialog(
           context: context,
-          builder: (_) => AlertDialog(
-            title: Text("In bearbeitung"),
-            content: Text("Das Blackboard wird gerade von jemand anderen bearbeitet, versuche es später erneut"),
-            actions: [
-              TextButton(
-                onPressed: (){
-                  Navigator.of(context).pop(); //exit dialog
-                },
-                child: Text("Ok"),
-              )
-            ],
-          ));
+          builder: (_) =>
+              AlertDialog(
+                title: Text("In bearbeitung"),
+                content: Text(
+                    "Das Blackboard wird gerade von jemand anderen bearbeitet, versuche es später erneut"),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(); //exit dialog
+                    },
+                    child: Text("Ok"),
+                  )
+                ],
+              ));
     }
-
-
   }
 
   // Displays the Delete all Blackboards Dialog --> .\widgets\main_delete_all_blackboards_dialog.dart
   Future<void> _displayDeleteAllBlackboardsDialog(BuildContext context) async {
     showDialog(
       context: context,
-      builder: (_) => new MainDeleteAllBlackboardsDialog(
+      builder: (_) =>
+      new MainDeleteAllBlackboardsDialog(
         onCancelPressed: () {
           Navigator.of(context).pop(); //exit dialog
         },
@@ -210,72 +235,152 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         body: Row(children: <Widget>[
           Expanded(
-            flex: 1,
-            child: Container(
-                color: Color(0xFFE8F4FF),
-                child: ListView.builder(
-                  itemCount: blackboardNames.length,
-                  padding: EdgeInsets.all(4),
-                  itemBuilder: (BuildContext context, int index) {
-                    int indexSelected = blackboardNames.indexOf(currentSelectedBlackboardName);
-                    bool selected = indexSelected == index;
-                    return Container(
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(4),
-                            border: !selected?null:Border.all(
-                              color: Colors.orange,
-                              width: 5,
-                            )
-                        ),
-                        height: MediaQuery.of(context).size.width / 8,
-                        child: Tapable(
-                          onTap: () {
-                            print(index);
-                            print(indexSelected);
-                            if(indexSelected == index) return;
-                            setState(() {
-                              currentSelectedBlackboardName = blackboardNames[index];
-                            });
-                          },
-                          child: Card(
-                            child: Padding(
-                              padding: EdgeInsets.all(16),
-                              child: Center(
-                                child: Text(blackboardNames[index],
-                                    style: TextStyle(
-                                        color: Colors.white, fontSize: 25),
-                                    textAlign: TextAlign.center),
-                              ),
-                            ),
-                            color: Colors.black,
-                          ),
-                        ));
+          flex: 1,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  controller: searchController,
+                  decoration: InputDecoration(
+                      labelText: "Search",
+                      hintText: "Search",
+                      prefixIcon: Icon(Icons.search),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(
+                              Radius.circular(25.0)))),
+                  onChanged: (text) {
+                    filterBlackboards(searchController.text);
                   },
-                )),
+                ),
+              ),
+              Container(
+                  color: Color(0xFFE8F4FF),
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: blackboardNames.length,
+                    padding: EdgeInsets.all(4),
+                    itemBuilder: (BuildContext context, int index) {
+                      int indexSelected = blackboardNames.indexOf(
+                          currentSelectedBlackboardName);
+                      bool selected = indexSelected == index;
+                      return Container(
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(4),
+                              border: !selected ? null : Border.all(
+                                color: Colors.orange,
+                                width: 5,
+                              )
+                          ),
+                          height: MediaQuery
+                              .of(context)
+                              .size
+                              .width / 8,
+                          child: Tapable(
+                            onTap: () {
+                              print(index);
+                              print(indexSelected);
+                              if (indexSelected == index) return;
+                              setState(() {
+                                currentSelectedBlackboardName =
+                                blackboardNames[index];
+                              });
+                            },
+                            child: Card(
+                              child: Padding(
+                                padding: EdgeInsets.all(16),
+                                child: Center(
+                                  child: Text(blackboardNames[index],
+                                      style: TextStyle(
+                                          color: Colors.white, fontSize: 25),
+                                      textAlign: TextAlign.center),
+                                ),
+                              ),
+                              color: Colors.black,
+                            ),
+                          ));
+                    },
+                  )),
+            ],
           ),
-          Expanded(
-              flex: 3,
-              child: currentSelectedBlackboardName == null?
-              SizedBox.shrink()
-                  :
-              BlackboardWidget(
-                  onTap: () => _displayUpdateBlackboardDialog(context),
-                  name: currentSelectedBlackboardName
-              )
-          ),
-          Expanded(
-              flex: 1,
-              child: LogDisplayWidget()
-          ),
-        ]),
-        floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
-        floatingActionButton: MainFloatingActionButton(
-          onAddBlackboardPressed: () {
-            _displayCreateNewBlackboardDialog(context);
-          },
-          onDeleteAllBlackboardsPressed: () {
-            _displayDeleteAllBlackboardsDialog(context);
-          },
-        ));
-  }
-}
+        ),
+        Expanded(
+            flex: 3,
+            child: currentSelectedBlackboardName == null ?
+            SizedBox.shrink()
+                :
+            BlackboardWidget(
+            onTap: () => _displayUpdateBlackboardDialog(context),
+
+  name
+
+      :
+
+  currentSelectedBlackboardName
+
+  )
+
+  )
+
+  ,
+
+  Expanded
+
+  (
+
+  flex
+
+      :
+
+  1
+
+  ,
+
+  child
+
+      :
+
+  LogDisplayWidget()
+
+  )
+
+  ,
+
+  ]
+
+  )
+
+  ,
+
+  floatingActionButtonLocation
+
+      :
+
+  FloatingActionButtonLocation.startFloat
+
+  ,
+
+  floatingActionButton
+
+      :
+
+  MainFloatingActionButton
+
+  (
+
+  onAddBlackboardPressed
+
+      : () {
+  _displayCreateNewBlackboardDialog(context);
+  },
+
+  onDeleteAllBlackboardsPressed
+
+      : () {
+  _displayDeleteAllBlackboardsDialog(context);
+  },
+
+  )
+
+  );
+}}
